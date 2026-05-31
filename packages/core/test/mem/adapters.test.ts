@@ -6,7 +6,7 @@
  * `homedir()` at a per-suite tmpdir before any mem module resolves.
  *
  * Migrated from the CLI `mem-platforms` suite when the adapters moved into
- * `@mindfoldhq/trellis-core/mem`.
+ * `@kun/trellis-core/mem`.
  */
 
 import {
@@ -185,6 +185,29 @@ describe("claudeListSessions / claudeExtractDialogue", () => {
     );
     expect(ids).toContain(sessionId);
     expect(ids).not.toContain("22222222-2222-2222-2222-222222222222");
+  });
+
+  it("scopes a Windows cwd through a flat legal project directory key", () => {
+    const windowsCwd = "D:\\tmp\\windows-project";
+    const windowsSessionId = "33333333-3333-3333-3333-333333333333";
+    const windowsFile = nodePath.join(
+      CLAUDE_PROJECTS,
+      "D--tmp-windows-project",
+      `${windowsSessionId}.jsonl`,
+    );
+    writeJsonl(windowsFile, [
+      {
+        type: "user",
+        cwd: windowsCwd,
+        timestamp: "2026-04-15T10:00:00Z",
+        message: { role: "user", content: "x" },
+      },
+    ]);
+
+    const ids = claudeListSessions(mkFilter({ cwd: windowsCwd })).map(
+      (s) => s.id,
+    );
+    expect(ids).toEqual([windowsSessionId]);
   });
 
   it("extractDialogue keeps user/assistant text turns and strips injection tags", () => {

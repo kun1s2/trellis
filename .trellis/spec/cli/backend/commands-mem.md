@@ -140,8 +140,11 @@ results sorted by `updated ?? created` descending; the same module's
 ### Claude Code
 
 - **Layout**: `~/.claude/projects/<sanitized-cwd>/<sessionId>.jsonl`. The cwd is
-  sanitized as `cwd.replace(/[/_]/g, "-")`. When `--cwd` is set, `mem` resolves
-  the single project directory directly; otherwise it walks every project dir.
+  sanitized by replacing `\`, `/`, and `_` with `-`, then replacing every
+  remaining non-`A-Za-z0-9.-` character with `-`. This keeps Windows drive
+  letters and separators from leaking invalid path characters into the project
+  directory key. When `--cwd` is set, `mem` resolves the single project
+  directory directly; otherwise it walks every project dir.
 - **Index**: when present, `<projectDir>/sessions-index.json` provides
   `cwd / created / title` per session id, saving a JSONL scan. Missing fields
   fall back to scanning the first 100 events (`findInJsonl`) for a `cwd`, then

@@ -535,6 +535,7 @@ async function withGitRegistry<T>(
       cwd: repoDir,
       stdio: "pipe",
     });
+    fs.writeFileSync(path.join(repoDir, ".gitattributes"), "* text eol=lf\n");
     writeFixtureFiles(repoDir, files);
     execFileSync("git", ["add", "."], { cwd: repoDir, stdio: "pipe" });
     execFileSync(

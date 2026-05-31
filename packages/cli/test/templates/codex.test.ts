@@ -15,8 +15,12 @@ const repoRoot = path.resolve(__dirname, "../../../..");
 
 const EXPECTED_AGENT_NAMES = [
   "trellis-check",
+  "trellis-code-architecture-review",
+  "trellis-code-review",
   "trellis-implement",
+  "trellis-merge-review",
   "trellis-research",
+  "trellis-spec-review",
 ];
 
 // Shared skills are now sourced from common/ via resolveAllAsSkills

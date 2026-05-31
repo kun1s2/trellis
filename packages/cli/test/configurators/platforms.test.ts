@@ -36,13 +36,42 @@ import {
   replacePythonCommandLiterals,
 } from "../../src/configurators/shared.js";
 
-const BUNDLED_SKILL_NAMES = ["trellis-meta", "trellis-spec-bootstarp"];
-const BUNDLED_SKILL_NAME = BUNDLED_SKILL_NAMES[0];
+const BUNDLED_SKILL_NAMES = [
+  "trellis-goal",
+  "trellis-grill-agents",
+  "trellis-meta",
+  "trellis-spec-bootstarp",
+];
 const BUNDLED_REFERENCE = path.join(
-  BUNDLED_SKILL_NAME,
+  "trellis-meta",
   "references",
   "local-architecture",
   "overview.md",
+);
+const GOAL_CONTRACT_REFERENCE = path.join(
+  "trellis-goal",
+  "references",
+  "goal-contract.md",
+);
+const GOAL_AMBIGUITY_REFERENCE = path.join(
+  "trellis-goal",
+  "references",
+  "ambiguity-handling.md",
+);
+const GOAL_PROTOCOL_REFERENCE = path.join(
+  "trellis-goal",
+  "references",
+  "trellis-goal-protocol.md",
+);
+const GOAL_TASK_MAPPING_REFERENCE = path.join(
+  "trellis-goal",
+  "references",
+  "task-mapping.md",
+);
+const GRILL_AGENTS_DETAILS_REFERENCE = path.join(
+  "trellis-grill-agents",
+  "references",
+  "details.md",
 );
 const SPEC_BOOTSTARP_REFERENCE = path.join(
   "trellis-spec-bootstarp",
@@ -285,6 +314,21 @@ describe("configurePlatform", () => {
       expect(fs.readFileSync(skillPath, "utf-8")).toBe(skill.content);
     }
     expect(fs.existsSync(path.join(skillsRoot, BUNDLED_REFERENCE))).toBe(true);
+    expect(fs.existsSync(path.join(skillsRoot, GOAL_CONTRACT_REFERENCE))).toBe(
+      true,
+    );
+    expect(fs.existsSync(path.join(skillsRoot, GOAL_AMBIGUITY_REFERENCE))).toBe(
+      true,
+    );
+    expect(fs.existsSync(path.join(skillsRoot, GOAL_PROTOCOL_REFERENCE))).toBe(
+      true,
+    );
+    expect(fs.existsSync(path.join(skillsRoot, GOAL_TASK_MAPPING_REFERENCE))).toBe(
+      true,
+    );
+    expect(
+      fs.existsSync(path.join(skillsRoot, GRILL_AGENTS_DETAILS_REFERENCE)),
+    ).toBe(true);
     expect(
       fs.existsSync(path.join(skillsRoot, "trellis-start", "SKILL.md")),
     ).toBe(true);
@@ -379,6 +423,12 @@ describe("configurePlatform", () => {
       expect(fs.readFileSync(skillPath, "utf-8")).toBe(skill.content);
     }
     expect(fs.existsSync(path.join(skillsRoot, BUNDLED_REFERENCE))).toBe(true);
+    expect(fs.existsSync(path.join(skillsRoot, GOAL_CONTRACT_REFERENCE))).toBe(
+      true,
+    );
+    expect(
+      fs.existsSync(path.join(skillsRoot, GRILL_AGENTS_DETAILS_REFERENCE)),
+    ).toBe(true);
   });
 
   it("configurePlatform('gemini') creates .gemini directory", async () => {
@@ -546,6 +596,12 @@ describe("configurePlatform", () => {
       expect(fs.readFileSync(filePath, "utf-8")).toBe(skill.content);
     }
     expect(fs.existsSync(path.join(skillsDir, BUNDLED_REFERENCE))).toBe(true);
+    expect(fs.existsSync(path.join(skillsDir, GOAL_CONTRACT_REFERENCE))).toBe(
+      true,
+    );
+    expect(
+      fs.existsSync(path.join(skillsDir, GRILL_AGENTS_DETAILS_REFERENCE)),
+    ).toBe(true);
 
     expect(actualSkillDirs).not.toContain("trellis-finish-work");
     expect(actualSkillDirs).not.toContain("trellis-continue");
@@ -782,6 +838,16 @@ describe("configurePlatform", () => {
     ).toBe(true);
     expect(
       fs.existsSync(path.join(tmpDir, ".pi", "skills", BUNDLED_REFERENCE)),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".pi", "skills", GOAL_CONTRACT_REFERENCE),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".pi", "skills", GRILL_AGENTS_DETAILS_REFERENCE),
+      ),
     ).toBe(true);
     expect(
       fs.existsSync(

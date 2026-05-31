@@ -13,6 +13,10 @@ const EXPECTED_AGENT_NAMES = [
   "trellis-research",
 ];
 
+function frontmatter(content: string): string {
+  return content.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? "";
+}
+
 describe("cursor getAllAgents", () => {
   it("returns the expected agent set", () => {
     const agents = getAllAgents();
@@ -35,7 +39,7 @@ describe("cursor agents frontmatter single-line description", () => {
         `${name}.md`,
       );
       const content = fs.readFileSync(filePath, "utf-8");
-      const fm = content.split("---\n")[1] ?? "";
+      const fm = frontmatter(content);
 
       // Block-scalar markers must be absent on the description line.
       expect(fm).not.toMatch(/^description:\s*\|\s*$/m);

@@ -153,6 +153,30 @@ describe("trellis template constants", () => {
     expect(block).toMatch(/codex|copilot|gemini|qoder/);
   });
 
+  it("[trellis-goal] workflow.md breadcrumbs route goal mode", () => {
+    const noTask = workflowStateBreadcrumb("no_task");
+    const planning = workflowStateBreadcrumb("planning");
+    const inProgress = workflowStateBreadcrumb("in_progress");
+    const inProgressInline = workflowStateBreadcrumb("in_progress-inline");
+
+    expect(noTask).toContain("load `trellis-goal`");
+    expect(planning).toContain("initialized or converted by `trellis-goal`");
+    expect(inProgress).toContain("Goal execution override");
+    expect(inProgress).toContain("Run-To-Completion Loop");
+    expect(inProgressInline).toContain("Goal execution override");
+  });
+
+  it("[trellis-goal] workflow.md routes attended and unattended grilling", () => {
+    const planning = workflowStateBreadcrumb("planning");
+    const planningInline = workflowStateBreadcrumb("planning-inline");
+
+    for (const block of [planning, planningInline]) {
+      expect(block).toContain("trellis-grill-me");
+      expect(block).toContain("trellis-grill-agents");
+      expect(block).toContain("unattended/proxy answers");
+    }
+  });
+
   it("[issue-237] workflow.md in_progress breadcrumb self-exempts implement/check sub-agents", () => {
     // The in_progress breadcrumb may be injected into sub-agent turns on some
     // hosts, so its main-session dispatch guidance must not recursively apply

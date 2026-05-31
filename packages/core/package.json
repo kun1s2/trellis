@@ -1,5 +1,5 @@
 {
-  "name": "@mindfoldhq/trellis-core",
+  "name": "@kun/trellis-core",
   "version": "0.6.0-beta.21",
   "description": "Trellis core SDK — channel and task domain primitives consumed by the Trellis CLI and downstream Node services",
   "type": "module",
@@ -58,7 +58,7 @@
     "agent",
     "events"
   ],
-  "author": "Mindfold LLC",
+  "author": "kun",
   "license": "AGPL-3.0-only",
   "devDependencies": {
     "@eslint/js": "^9.18.0",
@@ -73,6 +73,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mindfold-ai/trellis.git"
+    "url": "https://github.com/kun1s2/trellis.git"
   }
 }

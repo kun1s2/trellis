@@ -15,9 +15,10 @@ export const CLAUDE_PROJECTS = path.join(HOME, ".claude", "projects");
 export const CODEX_SESSIONS = path.join(HOME, ".codex", "sessions");
 
 /** Claude sanitizes a cwd into its on-disk project dir name by replacing
- * every `/` and `_` with `-`. */
+ * separators first, then every remaining non-safe project key character. */
 export function claudeProjectDirFromCwd(cwd: string): string {
-  return path.join(CLAUDE_PROJECTS, cwd.replace(/[/_]/g, "-"));
+  const slashes = cwd.replace(/[\\/_]/g, "-");
+  return path.join(CLAUDE_PROJECTS, slashes.replace(/[^A-Za-z0-9.-]/g, "-"));
 }
 
 /** Lazy stack-based recursive file walk — yields every file path under

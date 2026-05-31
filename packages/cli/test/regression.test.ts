@@ -12,7 +12,7 @@
  * 5. Platform Registry (beta.9, beta.13, beta.16)
  */
 
-import { execSync, spawnSync } from "node:child_process";
+import { execFileSync, execSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -67,6 +67,12 @@ import { TrellisContext } from "../src/templates/opencode/lib/trellis-context.js
 afterEach(() => {
   clearManifestCache();
 });
+
+const HOST_PYTHON = process.platform === "win32" ? "python" : "python3";
+
+function frontmatter(content: string): string {
+  return content.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? "";
+}
 
 // =============================================================================
 // 1. Windows / Encoding Regressions
@@ -350,22 +356,19 @@ ${separator}
   }
 
   function runAddSession(title: string, options?: { branch?: string }): void {
-    const command = [
-      "python3",
-      JSON.stringify(
-        path.join(tmpDir, ".trellis", "scripts", "add_session.py"),
-      ),
+    const args = [
+      path.join(tmpDir, ".trellis", "scripts", "add_session.py"),
       "--title",
-      JSON.stringify(title),
+      title,
       "--summary",
-      JSON.stringify("Regression test session"),
+      "Regression test session",
       "--no-commit",
     ];
     if (options?.branch) {
-      command.push("--branch", JSON.stringify(options.branch));
+      args.push("--branch", options.branch);
     }
 
-    execSync(command.join(" "), {
+    execFileSync(HOST_PYTHON, args, {
       cwd: tmpDir,
       encoding: "utf-8",
       env: { ...process.env, TRELLIS_CONTEXT_ID: "session-a" },
@@ -3337,7 +3340,7 @@ print(len(entries))
       "result = {'M': mod._strip_breadcrumb_tag_blocks(matched), 'X': mod._strip_breadcrumb_tag_blocks(mismatched), 'N': mod._strip_breadcrumb_tag_blocks(nested_orphan)}",
       "print(json.dumps(result))",
     ].join("; ");
-    const output = execSync(`${pythonCmd} -c ${JSON.stringify(probe)}`, {
+    const output = execFileSync(pythonCmd, ["-c", probe], {
       cwd: tmpDir,
       encoding: "utf-8",
     });
@@ -4889,7 +4892,7 @@ describe("regression: parse_simple_yaml Python execution (0.3.8)", () => {
       "print(json.dumps(result))",
     ].join("\n");
     fs.writeFileSync(scriptFile, script);
-    const out = execSync(`python3 ${JSON.stringify(scriptFile)}`, {
+    const out = execFileSync(HOST_PYTHON, [scriptFile], {
       encoding: "utf-8",
     });
     return JSON.parse(out.trim());
@@ -5197,7 +5200,7 @@ describe("regression: research agent persists findings to task dir", () => {
     it(`[${rel}] has Write tool and persist instruction`, () => {
       const content = fs.readFileSync(path.join(repoRoot, rel), "utf-8");
       // Frontmatter tool list must include Write (capitalized form)
-      const fm = content.split("---\n")[1] ?? "";
+      const fm = frontmatter(content);
       expect(fm).toMatch(/tools:\s*[^\n]*\bWrite\b/);
       // Body must reference persist target
       expect(content).toContain("{TASK_DIR}/research/");
@@ -5215,7 +5218,7 @@ describe("regression: research agent persists findings to task dir", () => {
   it("[packages/cli/src/templates/gemini/agents/trellis-research.md] omits tools line + has persist instruction", () => {
     const rel = "packages/cli/src/templates/gemini/agents/trellis-research.md";
     const content = fs.readFileSync(path.join(repoRoot, rel), "utf-8");
-    const fm = content.split("---\n")[1] ?? "";
+    const fm = frontmatter(content);
     expect(fm).not.toMatch(/^tools:/m);
     expect(content).toContain("{TASK_DIR}/research/");
     expect(content).toMatch(/PERSIST|[Pp]ersist/);
@@ -5260,7 +5263,7 @@ describe("regression: research agent persists findings to task dir", () => {
       ),
       "utf-8",
     );
-    const fm = content.split("---\n")[1] ?? "";
+    const fm = frontmatter(content);
     // OpenCode uses YAML permission block, not Claude-style `tools:` list
     expect(fm).toMatch(/^\s*write:\s*allow\s*$/m);
     expect(fm).toMatch(/^\s*edit:\s*allow\s*$/m);

@@ -378,6 +378,31 @@ describe("collectPlatformTemplates", () => {
           `${skillRoot}/trellis-spec-bootstarp/references/spec-writing.md`,
         ),
       ).toBe(true);
+      expect(result?.has(`${skillRoot}/trellis-goal/SKILL.md`)).toBe(true);
+      expect(
+        result?.has(`${skillRoot}/trellis-goal/references/goal-contract.md`),
+      ).toBe(true);
+      expect(
+        result?.has(
+          `${skillRoot}/trellis-goal/references/ambiguity-handling.md`,
+        ),
+      ).toBe(true);
+      expect(
+        result?.has(
+          `${skillRoot}/trellis-goal/references/trellis-goal-protocol.md`,
+        ),
+      ).toBe(true);
+      expect(
+        result?.has(`${skillRoot}/trellis-goal/references/task-mapping.md`),
+      ).toBe(true);
+      expect(
+        result?.has(`${skillRoot}/trellis-grill-agents/SKILL.md`),
+      ).toBe(true);
+      expect(
+        result?.has(
+          `${skillRoot}/trellis-grill-agents/references/details.md`,
+        ),
+      ).toBe(true);
     }
   });
 

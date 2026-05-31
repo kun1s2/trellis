@@ -6,6 +6,8 @@ Provides:
     ensure_tasks_dir   - Ensure tasks directory exists
     cmd_create         - Create a new task
     cmd_archive        - Archive completed task
+    cmd_mark_goal      - Mark a task as a Trellis goal
+    cmd_goal_info      - Show Trellis goal metadata and slice summary
     cmd_set_branch     - Set git branch for task
     cmd_set_base_branch - Set PR target branch
     cmd_set_scope      - Set scope for PR title
@@ -137,6 +139,8 @@ _SEED_EXAMPLE = (
     "Delete this line once real entries are added."
 )
 
+_GOAL_METADATA_VERSION = 1
+
 
 def _has_subagent_platform(repo_root: Path) -> bool:
     """Return True if any sub-agent-capable platform is configured.
@@ -186,6 +190,163 @@ def _default_prd_content(title: str, description: str | None = None) -> str:
 - Lightweight tasks can remain PRD-only.
 - For complex tasks, add `design.md` for technical design and `implement.md` for execution planning before `task.py start`.
 """
+
+
+# =============================================================================
+# Trellis Goal Metadata
+# =============================================================================
+
+def _iso_now() -> str:
+    """Return a timezone-aware ISO timestamp without microseconds."""
+    return datetime.now().astimezone().replace(microsecond=0).isoformat()
+
+
+def _read_task_json_for_command(task_input: str, repo_root: Path) -> tuple[Path, dict] | None:
+    """Resolve a task and load task.json for commands that mutate or report it."""
+    task_dir = resolve_task_dir(task_input, repo_root)
+    task_json_path = task_dir / FILE_TASK_JSON
+    if not task_dir.is_dir() or not task_json_path.is_file():
+        print(colored(f"Error: Task not found: {task_input}", Colors.RED), file=sys.stderr)
+        return None
+
+    data = read_json(task_json_path)
+    if data is None:
+        print(colored(f"Error: Failed to read task.json: {task_json_path}", Colors.RED), file=sys.stderr)
+        return None
+
+    return task_dir, data
+
+
+def _goal_metadata(data: dict) -> dict | None:
+    """Return existing Trellis goal metadata when present and valid."""
+    meta = data.get("meta")
+    if not isinstance(meta, dict):
+        return None
+    trellis_goal = meta.get("trellis_goal")
+    if not isinstance(trellis_goal, dict):
+        return None
+    return trellis_goal
+
+
+def _parse_goal_slices(implement_path: Path) -> tuple[int, dict[str, int], str | None]:
+    """Parse implement.md slice headings and status lines."""
+    counts: dict[str, int] = {
+        "pending": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "done": 0,
+        "unknown": 0,
+    }
+    if not implement_path.is_file():
+        return 0, counts, None
+
+    slices: list[tuple[str, str]] = []
+    current_title: str | None = None
+    current_status: str | None = None
+
+    for line in implement_path.read_text(encoding="utf-8").splitlines():
+        heading = re.match(r"^###\s+(Slice\s+\d+:.+)$", line)
+        if heading:
+            if current_title is not None:
+                slices.append((current_title, current_status or "unknown"))
+            current_title = heading.group(1).strip()
+            current_status = None
+            continue
+
+        status = re.match(r"^\s*-\s*Status:\s*([A-Za-z0-9_-]+)\s*$", line)
+        if current_title is not None and status:
+            current_status = status.group(1).strip()
+
+    if current_title is not None:
+        slices.append((current_title, current_status or "unknown"))
+
+    next_slice: str | None = None
+    for title, status in slices:
+        counts[status] = counts.get(status, 0) + 1
+        if next_slice is None and status != "done":
+            next_slice = f"{title} ({status})"
+
+    return len(slices), counts, next_slice
+
+
+def cmd_mark_goal(args: argparse.Namespace) -> int:
+    """Mark a task as a Trellis goal."""
+    repo_root = get_repo_root()
+    loaded = _read_task_json_for_command(args.dir, repo_root)
+    if loaded is None:
+        return 1
+
+    task_dir, data = loaded
+    meta = data.get("meta")
+    if meta is None:
+        meta = {}
+        data["meta"] = meta
+    if not isinstance(meta, dict):
+        print(colored("Error: task.json meta must be an object", Colors.RED), file=sys.stderr)
+        return 1
+
+    existing = meta.get("trellis_goal")
+    if existing is not None and not isinstance(existing, dict):
+        print(colored("Error: task.json meta.trellis_goal must be an object", Colors.RED), file=sys.stderr)
+        return 1
+
+    now = _iso_now()
+    current_status = str(data.get("status") or "unknown")
+    prior = existing if isinstance(existing, dict) else {}
+    trellis_goal = {
+        "enabled": True,
+        "version": _GOAL_METADATA_VERSION,
+        "cadence": args.cadence,
+        "source": args.source,
+        "converted_from_status": prior.get("converted_from_status") or current_status,
+        "converted_at": prior.get("converted_at") or now,
+        "updated_at": now,
+    }
+    meta["trellis_goal"] = trellis_goal
+
+    task_json_path = task_dir / FILE_TASK_JSON
+    if not write_json(task_json_path, data):
+        print(colored(f"Error: Failed to write task.json: {task_json_path}", Colors.RED), file=sys.stderr)
+        return 1
+
+    print(colored(f"Marked Trellis goal: {task_dir.name}", Colors.GREEN))
+    print(f"Cadence: {args.cadence}")
+    print(f"Source: {args.source}")
+    print(f"Converted from status: {trellis_goal['converted_from_status']}")
+    return 0
+
+
+def cmd_goal_info(args: argparse.Namespace) -> int:
+    """Show Trellis goal metadata and slice summary."""
+    repo_root = get_repo_root()
+    loaded = _read_task_json_for_command(args.dir, repo_root)
+    if loaded is None:
+        return 1
+
+    task_dir, data = loaded
+    goal = _goal_metadata(data)
+    relative_task = _repo_relative_path(task_dir, repo_root)
+
+    print(f"Task: {relative_task}")
+    print("Trellis Goal:")
+    if not goal or goal.get("enabled") is not True:
+        print("  Enabled: false")
+    else:
+        print("  Enabled: true")
+        print(f"  Version: {goal.get('version', '-')}")
+        print(f"  Cadence: {goal.get('cadence', '-')}")
+        print(f"  Source: {goal.get('source', '-')}")
+        print(f"  Converted From Status: {goal.get('converted_from_status', '-')}")
+        print(f"  Converted At: {goal.get('converted_at', '-')}")
+        print(f"  Updated At: {goal.get('updated_at', '-')}")
+
+    total, counts, next_slice = _parse_goal_slices(task_dir / "implement.md")
+    print("Slices:")
+    print(f"  Total: {total}")
+    for status in sorted(counts):
+        print(f"  {status}: {counts[status]}")
+    print(f"  Next: {next_slice or '-'}")
+    return 0
 
 
 # =============================================================================

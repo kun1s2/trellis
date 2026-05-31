@@ -174,6 +174,7 @@ Create new children with `task.py create "<title>" --slug <name> --parent <paren
 <!-- Per-turn breadcrumb: shown when there is no active task (before Phase 1) -->
 
 [workflow-state:no_task]
+Goal entry: if the user's current request invokes `/goal`, goal mode, unattended work, auto-advance, or long-running autonomous execution, load `trellis-goal`. It creates or updates a Trellis task, preserves raw input in `prd.md`, writes the Goal Contract and Task Slices into Trellis artifacts, and runs `task.py start` only after its quality gate passes.
 No active task. First classify the current turn and ask for task-creation consent before creating any Trellis task.
 Simple conversation / small task: ask only whether this turn should create a Trellis task. If the user says no, skip Trellis for this session.
 Complex task: ask the user if you can create a Trellis task and enter the planning phase. If the user says no, explain, clarify scope, or suggest a smaller split.
@@ -190,7 +191,8 @@ Complex task: ask the user if you can create a Trellis task and enter the planni
 <!-- Per-turn breadcrumb: shown throughout Phase 1 (status='planning') -->
 
 [workflow-state:planning]
-Load `trellis-brainstorm`; stay in planning.
+If this task was initialized or converted by `trellis-goal`, load `trellis-goal` and follow `prd.md` Goal Contract plus `implement.md` Task Slices; do not ask clarifying questions in execution mode.
+Otherwise, load `trellis-brainstorm`; stay in planning. If unresolved product, scope, or preference decisions remain, default to `trellis-grill-me`; use `trellis-grill-agents` only when the user explicitly authorizes unattended/proxy answers.
 Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
 Multi-deliverable scope: consider a parent task plus independently verifiable child tasks; dependencies must be written in child artifacts, not implied by tree position.
 Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research manifests before start.
@@ -203,7 +205,8 @@ Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research mani
      into a sub-agent. -->
 
 [workflow-state:planning-inline]
-Load `trellis-brainstorm`; stay in planning.
+If this task was initialized or converted by `trellis-goal`, load `trellis-goal` and follow `prd.md` Goal Contract plus `implement.md` Task Slices; do not ask clarifying questions in execution mode.
+Otherwise, load `trellis-brainstorm`; stay in planning. If unresolved product, scope, or preference decisions remain, default to `trellis-grill-me`; use `trellis-grill-agents` only when the user explicitly authorizes unattended/proxy answers.
 Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
 Multi-deliverable scope: consider a parent task plus independently verifiable child tasks; dependencies must be written in child artifacts, not implied by tree position.
 Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-before-dev`.
@@ -223,6 +226,7 @@ Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-bef
 Sub-agent dispatch protocol applies to all platforms and all sub-agents, including class-2 Codex/Copilot/Gemini/Qoder and `trellis-research`: every dispatch prompt starts with `Active task: <task path from task.py current>` before role-specific instructions.
 
 [workflow-state:in_progress]
+Goal execution override: if the active task's `prd.md` contains `## Goal Contract` or Goal Contract Collision output from `trellis-goal`, load `trellis-goal` first. Default auto-advance executes exactly one next pending `implement.md` Task Slice for a client-advanced turn; if the current user message or stored Goal Contract asks to run once, run to completion, run the whole parent task, or drain all pending slices, run the `trellis-goal` Run-To-Completion Loop in this assistant turn.
 Tools: `trellis-implement` / `trellis-research` are sub-agent types only (Task/Agent tool, NOT Skill; there is no skill by these names). `trellis-update-spec` is a skill. `trellis-check` exists as both; prefer the Agent form when verifying after code changes.
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> `/trellis:finish-work`.
 Main-session default: dispatch implement/check sub-agents. Sub-agent self-exemption: if already running as `trellis-implement`, do NOT spawn another `trellis-implement` or `trellis-check`; if already running as `trellis-check`, do NOT spawn another `trellis-check` or `trellis-implement`. Dispatch is main session only.
@@ -235,6 +239,7 @@ Dispatch prompt starts with `Active task: <task path from task.py current>`. Rea
      instead of dispatching sub-agents. -->
 
 [workflow-state:in_progress-inline]
+Goal execution override: if the active task's `prd.md` contains `## Goal Contract` or Goal Contract Collision output from `trellis-goal`, load `trellis-goal` first. Default auto-advance executes exactly one next pending `implement.md` Task Slice directly in the main session for a client-advanced turn; if the current user message or stored Goal Contract asks to run once, run to completion, run the whole parent task, or drain all pending slices, run the `trellis-goal` Run-To-Completion Loop in this assistant turn.
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> `/trellis:finish-work`.
 Do not dispatch implement/check sub-agents in inline mode.
 Read context: `prd.md` -> `design.md if present` -> `implement.md if present`, plus relevant spec/research loaded by skills.
@@ -274,6 +279,8 @@ When a user request matches one of these intents inside an active task, route fi
 [Claude Code, Cursor, OpenCode, codex-sub-agent, Kiro, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi]
 
 - Planning or unclear requirements -> `trellis-brainstorm`.
+- `/goal`, goal mode, unattended autonomous work, or auto-advance -> `trellis-goal`.
+- Requirement/design pressure-testing with the user participating -> `trellis-grill-me`; explicitly authorized unattended/proxy artifact grilling -> `trellis-grill-agents`.
 - `in_progress` implementation/check -> dispatch `trellis-implement` / `trellis-check`.
 - Repeated debugging -> `trellis-break-loop`; spec updates -> `trellis-update-spec`.
 
@@ -282,6 +289,8 @@ When a user request matches one of these intents inside an active task, route fi
 [codex-inline, Kilo, Antigravity, Windsurf]
 
 - Planning or unclear requirements -> `trellis-brainstorm`.
+- `/goal`, goal mode, unattended autonomous work, or auto-advance -> `trellis-goal`.
+- Requirement/design pressure-testing with the user participating -> `trellis-grill-me`; explicitly authorized unattended/proxy artifact grilling -> `trellis-grill-agents`.
 - Before editing -> `trellis-before-dev`; after editing -> `trellis-check`.
 - Repeated debugging -> `trellis-break-loop`; spec updates -> `trellis-update-spec`.
 

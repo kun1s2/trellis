@@ -6,6 +6,7 @@ import { init } from "../commands/init.js";
 import { update } from "../commands/update.js";
 import { upgrade } from "../commands/upgrade.js";
 import { uninstall } from "../commands/uninstall.js";
+import { runCodexLauncher } from "../commands/codex.js";
 import { runMem } from "../commands/mem.js";
 import {
   runWorkflowCommand,
@@ -223,6 +224,27 @@ program
   .action((args: string[] = []) => {
     try {
       runMem(args);
+    } catch (error) {
+      console.error(
+        chalk.red("Error:"),
+        error instanceof Error ? error.message : error,
+      );
+      if (process.env.DEBUG || process.env.TRELLIS_DEBUG) {
+        console.error(error instanceof Error ? error.stack : error);
+      }
+      process.exit(1);
+    }
+  });
+
+program
+  .command("codex")
+  .description("Launch Codex with Trellis project-level session config")
+  .allowUnknownOption(true)
+  .allowExcessArguments(true)
+  .argument("[args...]", "Arguments passed through to the codex CLI")
+  .action(async (args: string[]) => {
+    try {
+      await runCodexLauncher({ args });
     } catch (error) {
       console.error(
         chalk.red("Error:"),

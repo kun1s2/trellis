@@ -46,8 +46,10 @@ const { runMem } = await import("../../src/commands/mem.js");
 // =============================================================================
 
 const CLAUDE_PROJECTS = nodePath.join(fakeHome, ".claude", "projects");
-const projectCwd = "/tmp/mem-int-project";
-const encodedCwd = projectCwd.replace(/[/_]/g, "-");
+const projectCwd = nodePath.resolve("/tmp/mem-int-project");
+const encodedCwd = projectCwd
+  .replace(/[\\/_]/g, "-")
+  .replace(/[^A-Za-z0-9.-]/g, "-");
 const projectDir = nodePath.join(CLAUDE_PROJECTS, encodedCwd);
 const sessionId = "deadbeef-1234-5678-9abc-def012345678";
 const sessionFile = nodePath.join(projectDir, `${sessionId}.jsonl`);

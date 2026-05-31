@@ -14,6 +14,8 @@ Usage:
     python3 task.py set-branch <dir> <branch>   # Set git branch
     python3 task.py set-base-branch <dir> <branch>  # Set PR target branch
     python3 task.py set-scope <dir> <scope>     # Set scope for PR title
+    python3 task.py mark-goal <dir>             # Mark task as a Trellis goal
+    python3 task.py goal-info <dir>             # Show Trellis goal metadata
     python3 task.py archive <task-dir>          # Archive completed task
     python3 task.py list                        # List active tasks
     python3 task.py list-archive [month]        # List archived tasks
@@ -53,6 +55,8 @@ from common.task_store import (
     cmd_set_branch,
     cmd_set_base_branch,
     cmd_set_scope,
+    cmd_mark_goal,
+    cmd_goal_info,
     cmd_add_subtask,
     cmd_remove_subtask,
 )
@@ -316,6 +320,8 @@ Usage:
   python3 task.py set-branch <dir> <branch>          Set git branch
   python3 task.py set-base-branch <dir> <branch>     Set PR target branch
   python3 task.py set-scope <dir> <scope>            Set scope for PR title
+  python3 task.py mark-goal <dir>                    Mark task as a Trellis goal
+  python3 task.py goal-info <dir>                    Show Trellis goal metadata
   python3 task.py archive <task-dir>                 Archive completed task
   python3 task.py add-subtask <parent> <child>       Link child task to parent
   python3 task.py remove-subtask <parent> <child>    Unlink child from parent
@@ -334,6 +340,8 @@ Examples:
   python3 task.py create "Add login feature" --slug add-login --package cli
   python3 task.py create "Child task" --slug child --parent .trellis/tasks/01-21-parent
   python3 task.py add-context <dir> implement .trellis/spec/cli/backend/auth.md "Auth guidelines"
+  python3 task.py mark-goal <dir> --source new-request --cadence one-slice-per-turn
+  python3 task.py goal-info <dir>
   python3 task.py set-branch <dir> task/add-login
   python3 task.py start .trellis/tasks/01-21-add-login
   python3 task.py current --source
@@ -441,6 +449,26 @@ def main() -> int:
     p_scope.add_argument("dir", help="Task directory")
     p_scope.add_argument("scope", help="Scope name")
 
+    # mark-goal
+    p_mark_goal = subparsers.add_parser("mark-goal", help="Mark task as a Trellis goal")
+    p_mark_goal.add_argument("dir", help="Task directory")
+    p_mark_goal.add_argument(
+        "--cadence",
+        choices=["one-slice-per-turn", "run-to-completion"],
+        default="one-slice-per-turn",
+        help="Goal execution cadence",
+    )
+    p_mark_goal.add_argument(
+        "--source",
+        choices=["new-request", "planning-task", "in-progress-task"],
+        default="new-request",
+        help="How the task entered Trellis Goal mode",
+    )
+
+    # goal-info
+    p_goal_info = subparsers.add_parser("goal-info", help="Show Trellis goal metadata")
+    p_goal_info.add_argument("dir", help="Task directory")
+
     # archive
     p_archive = subparsers.add_parser("archive", help="Archive task")
     p_archive.add_argument("name", help="Task directory or name")
@@ -482,6 +510,8 @@ def main() -> int:
         "set-branch": cmd_set_branch,
         "set-base-branch": cmd_set_base_branch,
         "set-scope": cmd_set_scope,
+        "mark-goal": cmd_mark_goal,
+        "goal-info": cmd_goal_info,
         "archive": cmd_archive,
         "add-subtask": cmd_add_subtask,
         "remove-subtask": cmd_remove_subtask,

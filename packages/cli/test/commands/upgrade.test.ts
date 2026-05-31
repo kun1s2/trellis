@@ -4,8 +4,13 @@ import {
   resolveUpgradeTag,
   upgrade,
 } from "../../src/commands/upgrade.js";
+import { PACKAGE_NAME } from "../../src/constants/version.js";
 
 describe("upgrade command", () => {
+  it("uses Kun's standalone distribution package name", () => {
+    expect(PACKAGE_NAME).toBe("@kun/trellis");
+  });
+
   it("defaults stable versions to latest", () => {
     expect(resolveUpgradeTag("0.5.12")).toBe("latest");
   });
@@ -36,10 +41,10 @@ describe("upgrade command", () => {
       buildUpgradeCommand({ tag: "beta" }, "0.5.12", "darwin"),
     ).toMatchObject({
       command: "npm",
-      args: ["install", "-g", "@mindfoldhq/trellis@beta"],
+      args: ["install", "-g", "@kun/trellis@beta"],
       spawnOptions: { stdio: "inherit", shell: false },
-      displayCommand: "npm install -g @mindfoldhq/trellis@beta",
-      target: "@mindfoldhq/trellis@beta",
+      displayCommand: "npm install -g @kun/trellis@beta",
+      target: "@kun/trellis@beta",
       tag: "beta",
       binaryCheckCommand: "which trellis",
     });
@@ -50,10 +55,10 @@ describe("upgrade command", () => {
       buildUpgradeCommand({ tag: "beta" }, "0.5.12", "win32"),
     ).toMatchObject({
       command: "cmd.exe",
-      args: ["/d", "/s", "/c", "npm install -g @mindfoldhq/trellis@beta"],
+      args: ["/d", "/s", "/c", "npm install -g @kun/trellis@beta"],
       spawnOptions: { stdio: "inherit", shell: false },
-      displayCommand: "npm install -g @mindfoldhq/trellis@beta",
-      target: "@mindfoldhq/trellis@beta",
+      displayCommand: "npm install -g @kun/trellis@beta",
+      target: "@kun/trellis@beta",
       tag: "beta",
       binaryCheckCommand: "where trellis",
     });
@@ -67,7 +72,7 @@ describe("upgrade command", () => {
 
     expect(runner).not.toHaveBeenCalled();
     expect(log).toHaveBeenCalledWith(
-      expect.stringContaining("Run: npm install -g @mindfoldhq/trellis@latest"),
+      expect.stringContaining("Run: npm install -g @kun/trellis@latest"),
     );
 
     log.mockRestore();
@@ -79,15 +84,24 @@ describe("upgrade command", () => {
 
     await upgrade({ tag: "latest" }, runner);
 
-    expect(runner).toHaveBeenCalledWith(
-      "npm",
-      ["install", "-g", "@mindfoldhq/trellis@latest"],
-      { stdio: "inherit", shell: false },
-    );
+    const expectedCommand = process.platform === "win32" ? "cmd.exe" : "npm";
+    const expectedArgs =
+      process.platform === "win32"
+        ? ["/d", "/s", "/c", "npm install -g @kun/trellis@latest"]
+        : ["install", "-g", "@kun/trellis@latest"];
+    const expectedBinaryCheck =
+      process.platform === "win32" ? "where trellis" : "which trellis";
+
+    expect(runner).toHaveBeenCalledWith(expectedCommand, expectedArgs, {
+      stdio: "inherit",
+      shell: false,
+    });
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining("trellis --version"),
     );
-    expect(log).toHaveBeenCalledWith(expect.stringContaining("which trellis"));
+    expect(log).toHaveBeenCalledWith(
+      expect.stringContaining(expectedBinaryCheck),
+    );
 
     log.mockRestore();
   });
@@ -97,7 +111,13 @@ describe("upgrade command", () => {
     const runner = vi.fn(() => ({ status: 1, signal: null }));
 
     await expect(upgrade({ tag: "latest" }, runner)).rejects.toThrow(
-      /npm install failed with exit code 1\.[\s\S]*Troubleshooting:[\s\S]*Manual command: npm install -g @mindfoldhq\/trellis@latest[\s\S]*npm config get prefix[\s\S]*which trellis/,
+      new RegExp(
+        "npm install failed with exit code 1\\.[\\s\\S]*" +
+          "Troubleshooting:[\\s\\S]*" +
+          "Manual command: npm install -g @kun/trellis@latest[\\s\\S]*" +
+          "npm config get prefix[\\s\\S]*" +
+          (process.platform === "win32" ? "where trellis" : "which trellis"),
+      ),
     );
 
     log.mockRestore();

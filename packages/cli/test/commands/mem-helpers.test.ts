@@ -2,12 +2,13 @@
  * Tier-1 unit tests for the `trellis mem` CLI-layer helpers.
  *
  * The reusable retrieval / search / cleaning primitives moved to
- * `@mindfoldhq/trellis-core/mem` and are covered by `packages/core/test/mem/*`.
+ * `@kun/trellis-core/mem` and are covered by `packages/core/test/mem/*`.
  * What remains here is CLI-only: argv parsing, flag → core-filter translation,
  * and terminal formatting.
  */
 
 import { describe, it, expect } from "vitest";
+import path from "node:path";
 
 import {
   parseArgv,
@@ -83,7 +84,7 @@ describe("buildFilter", () => {
 
   it("--cwd overrides process.cwd() and resolves relative paths", () => {
     const f = buildFilter({ cwd: "/some/abs/path" });
-    expect(f.cwd).toBe("/some/abs/path");
+    expect(f.cwd).toBe(path.resolve("/some/abs/path"));
   });
 });
 
