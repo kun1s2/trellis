@@ -17,7 +17,7 @@ import { downloadTemplate } from "giget";
 export const TEMPLATE_INDEX_URL =
   "https://raw.githubusercontent.com/kun1s2/marketplace/main/index.json";
 
-const TEMPLATE_REPO = "gh:kun1s2/marketplace";
+export const TEMPLATE_REPO = "gh:kun1s2/marketplace";
 
 /** Map template type to installation path */
 const INSTALL_PATHS: Record<string, string> = {

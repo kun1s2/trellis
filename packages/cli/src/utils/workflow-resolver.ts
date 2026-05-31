@@ -20,6 +20,7 @@ import { workflowMdTemplate } from "../templates/trellis/index.js";
 import {
   TIMEOUTS,
   TEMPLATE_INDEX_URL,
+  TEMPLATE_REPO,
   RegistryBackendError,
   parseRegistrySource,
   probeRegistryIndex,
@@ -118,15 +119,59 @@ function parseSourceOrThrow(source: string): RegistrySource {
   }
 }
 
+function defaultMarketplaceRegistry(): RegistrySource {
+  return parseSourceOrThrow(TEMPLATE_REPO);
+}
+
+function resolveMarketplaceSource(options: WorkflowResolveOptions): {
+  registry: RegistrySource;
+  indexUrl: string;
+  allowGitFallback: boolean;
+} {
+  const registry = options.source
+    ? parseSourceOrThrow(options.source)
+    : defaultMarketplaceRegistry();
+  return {
+    registry,
+    indexUrl: `${registry.rawBaseUrl}/index.json`,
+    allowGitFallback: !options.source,
+  };
+}
+
 async function fetchWorkflowEntries(
   registry: RegistrySource | undefined,
   indexUrl: string,
+  allowGitFallback = false,
 ): Promise<{
   templates: SpecTemplate[];
   backend?: RegistryBackend;
   errorMessage?: string;
 }> {
   const probe = await probeRegistryIndex(indexUrl, registry);
+  if (
+    probe.error &&
+    allowGitFallback &&
+    registry &&
+    probe.backend === "http" &&
+    probe.error.kind === "network" &&
+    !probe.error.message.includes("(HTTP")
+  ) {
+    const gitProbe = await probeRegistryIndex(indexUrl, {
+      ...registry,
+      preferGit: true,
+    });
+    if (!gitProbe.error || gitProbe.isNotFound) {
+      if (gitProbe.isNotFound) {
+        return {
+          templates: [],
+          backend: gitProbe.backend,
+          errorMessage:
+            "No marketplace index.json found at the configured source. Workflow templates require an index.json.",
+        };
+      }
+      return { templates: gitProbe.templates, backend: gitProbe.backend };
+    }
+  }
   if (probe.error) {
     return {
       templates: [],
@@ -163,14 +208,14 @@ export async function listWorkflowTemplates(
 }> {
   const result: WorkflowTemplateListing[] = [nativeListingEntry()];
 
-  let registry: RegistrySource | undefined;
-  let indexUrl = TEMPLATE_INDEX_URL;
-  if (options.source) {
-    registry = parseSourceOrThrow(options.source);
-    indexUrl = `${registry.rawBaseUrl}/index.json`;
-  }
+  const { registry, indexUrl, allowGitFallback } =
+    resolveMarketplaceSource(options);
 
-  const fetched = await fetchWorkflowEntries(registry, indexUrl);
+  const fetched = await fetchWorkflowEntries(
+    registry,
+    indexUrl,
+    allowGitFallback,
+  );
   if (fetched.errorMessage) {
     return { templates: result, errorMessage: fetched.errorMessage };
   }
@@ -208,14 +253,14 @@ export async function resolveWorkflowTemplate(
     return nativeResolvedEntry();
   }
 
-  let registry: RegistrySource | undefined;
-  let indexUrl = TEMPLATE_INDEX_URL;
-  if (options.source) {
-    registry = parseSourceOrThrow(options.source);
-    indexUrl = `${registry.rawBaseUrl}/index.json`;
-  }
+  const { registry, indexUrl, allowGitFallback } =
+    resolveMarketplaceSource(options);
 
-  const fetched = await fetchWorkflowEntries(registry, indexUrl);
+  const fetched = await fetchWorkflowEntries(
+    registry,
+    indexUrl,
+    allowGitFallback,
+  );
   if (fetched.errorMessage) {
     throw new WorkflowResolveError(
       `Could not fetch workflow template index: ${fetched.errorMessage}`,
