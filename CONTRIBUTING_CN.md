@@ -6,7 +6,7 @@
 
 ### 报告 Bug
 
-提交 Bug 前，请先查看 [已有 Issues](https://github.com/mindfold-ai/Trellis/issues) 避免重复。
+提交 Bug 前，请先查看 [已有 Issues](https://github.com/kun1s2/trellis/issues) 避免重复。
 
 报告 Bug 时请包含：
 - Trellis 版本 (`trellis --version`)
