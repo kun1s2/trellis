@@ -8,7 +8,7 @@ import { PACKAGE_NAME } from "../../src/constants/version.js";
 
 describe("upgrade command", () => {
   it("uses Kun's standalone distribution package name", () => {
-    expect(PACKAGE_NAME).toBe("@kun/trellis");
+    expect(PACKAGE_NAME).toBe("psymoth");
   });
 
   it("defaults stable versions to latest", () => {
@@ -41,10 +41,10 @@ describe("upgrade command", () => {
       buildUpgradeCommand({ tag: "beta" }, "0.5.12", "darwin"),
     ).toMatchObject({
       command: "npm",
-      args: ["install", "-g", "@kun/trellis@beta"],
+      args: ["install", "-g", "psymoth@beta"],
       spawnOptions: { stdio: "inherit", shell: false },
-      displayCommand: "npm install -g @kun/trellis@beta",
-      target: "@kun/trellis@beta",
+      displayCommand: "npm install -g psymoth@beta",
+      target: "psymoth@beta",
       tag: "beta",
       binaryCheckCommand: "which trellis",
     });
@@ -55,10 +55,10 @@ describe("upgrade command", () => {
       buildUpgradeCommand({ tag: "beta" }, "0.5.12", "win32"),
     ).toMatchObject({
       command: "cmd.exe",
-      args: ["/d", "/s", "/c", "npm install -g @kun/trellis@beta"],
+      args: ["/d", "/s", "/c", "npm install -g psymoth@beta"],
       spawnOptions: { stdio: "inherit", shell: false },
-      displayCommand: "npm install -g @kun/trellis@beta",
-      target: "@kun/trellis@beta",
+      displayCommand: "npm install -g psymoth@beta",
+      target: "psymoth@beta",
       tag: "beta",
       binaryCheckCommand: "where trellis",
     });
@@ -72,7 +72,7 @@ describe("upgrade command", () => {
 
     expect(runner).not.toHaveBeenCalled();
     expect(log).toHaveBeenCalledWith(
-      expect.stringContaining("Run: npm install -g @kun/trellis@latest"),
+      expect.stringContaining("Run: npm install -g psymoth@latest"),
     );
 
     log.mockRestore();
@@ -87,8 +87,8 @@ describe("upgrade command", () => {
     const expectedCommand = process.platform === "win32" ? "cmd.exe" : "npm";
     const expectedArgs =
       process.platform === "win32"
-        ? ["/d", "/s", "/c", "npm install -g @kun/trellis@latest"]
-        : ["install", "-g", "@kun/trellis@latest"];
+        ? ["/d", "/s", "/c", "npm install -g psymoth@latest"]
+        : ["install", "-g", "psymoth@latest"];
     const expectedBinaryCheck =
       process.platform === "win32" ? "where trellis" : "which trellis";
 
@@ -114,7 +114,7 @@ describe("upgrade command", () => {
       new RegExp(
         "npm install failed with exit code 1\\.[\\s\\S]*" +
           "Troubleshooting:[\\s\\S]*" +
-          "Manual command: npm install -g @kun/trellis@latest[\\s\\S]*" +
+          "Manual command: npm install -g psymoth@latest[\\s\\S]*" +
           "npm config get prefix[\\s\\S]*" +
           (process.platform === "win32" ? "where trellis" : "which trellis"),
       ),

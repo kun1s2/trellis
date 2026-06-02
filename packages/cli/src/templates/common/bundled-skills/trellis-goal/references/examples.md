@@ -23,7 +23,7 @@
 - Token Budget: 80000
 - Project Type: TypeScript backend, inferred from `package.json` and auth tests.
 - Scenario: Code Change
-- Execution Cadence: one-slice-per-turn
+- Cadence Hint: checkpoint-bounded
 ```
 
 ```markdown
@@ -49,28 +49,28 @@ Problems:
 - "Tests pass" does not name a command.
 - "If unclear" is not mechanically detectable.
 
-## Trellis Execution Decomposition
+## Trellis Native Goal Checkpoints
 
-Use `implement.md` task slices:
+Use `implement.md` checkpoints as evidence and recovery landmarks:
 
 ```markdown
-### Slice 1: Locate auth middleware and current tests
-- Slice Type: work
+### Checkpoint 1: Locate auth middleware and current tests
+- Type: work
 - Status: pending
-- Acceptance: relevant files and commands are identified in `info.md`.
+- Acceptance: relevant files and commands are identified in `design.md`.
 
-### Slice 2: Add failing rotation tests
-- Slice Type: work
+### Checkpoint 2: Add failing rotation tests
+- Type: work
 - Status: pending
 - Acceptance: new tests fail for missing rotation behavior.
 
-### Slice 3: Implement rotation support
-- Slice Type: work
+### Checkpoint 3: Implement rotation support
+- Type: work
 - Status: pending
 - Acceptance: targeted tests pass.
 
-### Slice 4: Comprehensive Check After Slices 1-3
-- Slice Type: check
+### Checkpoint 4: Comprehensive Check
+- Type: check
 - Status: pending
 - Acceptance: scope, regression, typecheck, tests, docs, and security checks are recorded.
 ```
@@ -83,5 +83,5 @@ Use `implement.md` task slices:
 - Existing work: middleware parsing was already refactored.
 - Verified evidence: `git diff -- src/auth/middleware.ts` and current tests.
 - Unverified work: rotation behavior has no test coverage yet.
-- Reconciliation slice: Slice 1 reconciles existing middleware changes with the Goal Contract.
+- Reconciliation checkpoint: Checkpoint 1 reconciles existing middleware changes with the Goal Contract.
 ```

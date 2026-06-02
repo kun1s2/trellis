@@ -17,7 +17,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@kun/trellis-core':
+      'psymoth-core':
         specifier: workspace:*
         version: link:../core
       chalk:

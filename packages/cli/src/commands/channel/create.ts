@@ -4,7 +4,7 @@ import {
   resolveChannelRef,
   type ChannelScope,
   type ChannelType,
-} from "@kun/trellis-core/channel";
+} from "psymoth-core/channel";
 
 import {
   parseChannelScope,

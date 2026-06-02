@@ -1,6 +1,6 @@
 # PRD Mapping
 
-Use these skeletons when initializing or converting a Trellis goal task. Keep raw user input verbatim.
+Use these skeletons when initializing or converting a Trellis-backed Codex native goal. Keep raw user input verbatim.
 
 ## `prd.md`
 
@@ -31,10 +31,10 @@ Only include this section when converting an existing task. Preserve useful prio
   1. <mechanically detectable condition plus detection method>
   2. <mechanically detectable condition plus detection method>
   3. <mechanically detectable condition plus detection method>
-- Token Budget: <number or "not specified">
+- Token Budget: <number only if user supplied one, otherwise "not specified">
 - Project Type: <detected type and evidence>
 - Scenario: <scenario or Custom>
-- Execution Cadence: <one-slice-per-turn | run-to-completion; include user evidence for run-to-completion>
+- Cadence Hint: <checkpoint-bounded | run-to-completion; include user evidence for run-to-completion>
 
 ## Default Assumptions
 
@@ -47,7 +47,7 @@ Only include this section when converting an existing task. Preserve useful prio
 
 | Topic | Level | Decision | Evidence | Trellis Record |
 |---|---|---|---|---|
-| <topic> | low/medium/high | <default/grill-agents/BLOCKED> | <evidence> | <prd/info/implement/research path> |
+| <topic> | low/medium/high | <default/grill-agents/BLOCKED> | <evidence> | <prd/design/implement/research path> |
 
 ## Acceptance Criteria
 
@@ -57,8 +57,8 @@ Only include this section when converting an existing task. Preserve useful prio
 
 | Action | File | Reason |
 |---|---|---|
-| implement | `.trellis/spec/.../index.md` | <why implement work needs it> |
-| check | `.trellis/spec/.../quality-guidelines.md` | <why check work needs it> |
+| implement | `.trellis/spec/.../index.md` | <why implementation needs it, if manifests are used> |
+| check | `.trellis/spec/.../quality-guidelines.md` | <why verification needs it, if manifests are used> |
 
 ## Out of Scope
 
@@ -71,28 +71,33 @@ Only include for in-progress conversion.
 - Existing work:
 - Verified evidence:
 - Unverified work:
-- Reconciliation slice:
+- Reconciliation checkpoint:
 
 ## Blocked Initialization
 
 Only include if initialization fails. Include the blocked condition, evidence, and next safe action.
 
+## Blocked Codex Native Goal Handoff
+
+Only include when Trellis artifacts are ready but Codex native goal handoff cannot safely happen, such as Plan mode or unavailable `create_goal`.
+
 ## Initialization Gate Evidence
 
 - Goal marker: `task.py mark-goal ...` <result or pending reason>
-- Done When mapping: <each item maps to slice acceptance or final verification>
+- Done When mapping: <each item maps to checkpoint acceptance or final verification>
 - Stop If detection: <each stop condition has a detection method>
 - Ambiguity handling: <low defaults / grill-agents files / blocked>
 - Context curation: <implement.jsonl/check.jsonl entries or inline equivalent>
-- Slice counts: <work slice count and check slice positions>
+- Checkpoint counts: <work/check checkpoint count>
+- Native handoff: <create_goal called | blocked reason | not requested for contract-only mode>
 - Dirty-state review: <evidence no source code changed during initialization>
 - Validation: `task.py validate <task>` <result or reason unavailable>
 ````
 
-## `info.md`
+## `design.md`
 
 ````markdown
-# Technical Notes
+# Technical Design
 
 ## Project Detection
 
@@ -101,6 +106,10 @@ Only include if initialization fails. Include the blocked condition, evidence, a
 ## Relevant Files
 
 - `<path>`: <why it matters>
+
+## Technical Boundary
+
+- <architecture choice, interface boundary, data flow, or constraint>
 
 ## Verification Commands
 
@@ -122,46 +131,37 @@ Only include if initialization fails. Include the blocked condition, evidence, a
 ## `implement.md`
 
 ````markdown
-# Implementation Plan
+# Implementation Checkpoints
 
-## Execution Cadence
+## Native Goal Handoff
 
-- Mode: <one-slice-per-turn | run-to-completion>
-- Trigger: <default | user explicitly requested run-to-completion>
-- Same-Turn Drain: <disabled | enabled until finalization or terminal stop>
-- Stop Conditions: Goal Contract `Stop If`, unresolved blocker, high-risk out-of-scope action, required commit confirmation, insufficient context/tool budget, user pause/cancel.
+- Codex Goal Status: <not-created | active | paused | blocked | complete | unavailable>
+- Handoff Objective: <compact create_goal summary or blocked reason>
+- Next Checkpoint: <checkpoint title/status>
+- Verification Policy: <commands/evidence required before completion>
 
-## Task Slices
+## Checkpoints
 
-### Slice 1: <small independently verifiable action>
-- Slice Type: work
+### Checkpoint 1: <small independently verifiable action>
+- Type: work
 - Status: pending
-- Acceptance: <how this slice is verified>
+- Acceptance: <how this checkpoint is verified>
 - Work Performed:
 - Verification Evidence:
 - Remaining Risk:
 - Next Step:
 
-### Slice 2: <small independently verifiable action>
-- Slice Type: work
+### Checkpoint 2: <small independently verifiable action>
+- Type: work
 - Status: pending
-- Acceptance: <how this slice is verified>
+- Acceptance: <how this checkpoint is verified>
 - Work Performed:
 - Verification Evidence:
 - Remaining Risk:
 - Next Step:
 
-### Slice 3: <small independently verifiable action>
-- Slice Type: work
-- Status: pending
-- Acceptance: <how this slice is verified>
-- Work Performed:
-- Verification Evidence:
-- Remaining Risk:
-- Next Step:
-
-### Slice 4: Comprehensive Check After Slices 1-3
-- Slice Type: check
+### Checkpoint 3: Comprehensive Check
+- Type: check
 - Status: pending
 - Acceptance: scope, tests, typecheck/build, UI/UX if relevant, security, data consistency, docs, rollback, and remaining risks are reviewed.
 - Work Performed:
@@ -174,7 +174,7 @@ Only include if initialization fails. Include the blocked condition, evidence, a
 - <timestamp/session>: <summary>
 ````
 
-## Slice Status Values
+## Checkpoint Status Values
 
 Use plain text status values only:
 
@@ -183,4 +183,4 @@ Use plain text status values only:
 - `blocked`
 - `done`
 
-Do not add new `task.json.status` values for slices.
+Do not add new `task.json.status` values for checkpoints.

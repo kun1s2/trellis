@@ -21,7 +21,7 @@ import {
   reduceWorkerRegistry,
   type ChannelEvent,
   type WorkerState,
-} from "@kun/trellis-core/channel";
+} from "psymoth-core/channel";
 
 import { DIR_NAMES } from "../../constants/paths.js";
 

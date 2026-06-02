@@ -7,12 +7,13 @@
  *   manifest/docs guards -> tests -> pre-release commit -> synchronized bump
  *   -> version check -> version commit -> tag -> push
  */
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CLI_DIR = path.resolve(__dirname, "..");
+const REPO_ROOT = path.resolve(CLI_DIR, "../..");
 
 const RELEASE_TYPES = new Set([
   "patch",
@@ -46,10 +47,19 @@ function output(command, options = {}) {
   }).trim();
 }
 
+function runGit(args) {
+  execFileSync("git", args, {
+    cwd: REPO_ROOT,
+    env: process.env,
+    stdio: "inherit",
+    encoding: "utf-8",
+  });
+}
+
 function hasGitDiff() {
   try {
-    execSync("git diff-index --quiet HEAD", {
-      cwd: CLI_DIR,
+    execFileSync("git", ["diff-index", "--quiet", "HEAD"], {
+      cwd: REPO_ROOT,
       stdio: ["pipe", "pipe", "pipe"],
     });
     return false;
@@ -76,20 +86,20 @@ function main() {
 
   run("node scripts/check-manifest-continuity.js");
   docsGuard(type);
-  run("pnpm --filter @kun/trellis-core test");
+  run("pnpm --filter psymoth-core test");
   run("pnpm test");
 
-  run("git add -A -- ':!docs-site' ':!marketplace'");
+  runGit(["add", "-A", "--", ".", ":(exclude)docs-site", ":(exclude)marketplace"]);
   if (hasGitDiff()) {
-    run("git commit -m 'chore: pre-release updates'");
+    runGit(["commit", "-m", "chore: pre-release updates"]);
   }
 
   const version = output(`node scripts/bump-versions.js ${type}`);
   run("node scripts/release-preflight.js check-versions");
-  run("git add package.json ../core/package.json");
-  run(`git commit -m "${version}"`);
-  run(`git tag "v${version}"`);
-  run(`git push origin ${pushTarget(type)} --tags`);
+  runGit(["add", "packages/cli/package.json", "packages/core/package.json"]);
+  runGit(["commit", "-m", version]);
+  runGit(["tag", `v${version}`]);
+  runGit(["push", "origin", pushTarget(type), "--tags"]);
 }
 
 main();

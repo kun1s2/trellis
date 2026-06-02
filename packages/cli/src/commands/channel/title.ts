@@ -2,7 +2,7 @@ import {
   clearChannelTitle,
   setChannelTitle,
   type ChannelScope,
-} from "@kun/trellis-core/channel";
+} from "psymoth-core/channel";
 
 import { parseChannelScope } from "./store/schema.js";
 

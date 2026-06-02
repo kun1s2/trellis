@@ -21,7 +21,7 @@ Write the assumption in `prd.md` under `## Default Assumptions`:
   Stop if: <mechanically detectable condition that invalidates it>
 ```
 
-Then continue initialization or execution.
+Then continue initialization or native goal handoff/continuation.
 
 ## Medium Ambiguity
 
@@ -33,14 +33,14 @@ Persist outputs in three places:
 - summary and accepted assumptions: `prd.md`
 - execution impact: `implement.md`
 
-After the grill, update the Goal Contract or slices. If the grill exposes a high-risk or scope-changing question, convert the result to `BLOCKED`.
+After the grill, update the Goal Contract or checkpoints. If the grill exposes a high-risk or scope-changing question, convert the result to `BLOCKED`.
 
 ## High Ambiguity
 
 Do not guess. Record the block where it occurred:
 
-- initialization: add `## Blocked Initialization` to `prd.md` and output `TRELLIS_GOAL_INIT_BLOCKED`
-- execution: mark the current slice `Status: blocked`, record evidence in `implement.md`, and report the blocked state
+- initialization: add `## Blocked Initialization` or `## Blocked Codex Native Goal Handoff` to `prd.md`
+- native continuation: mark the current checkpoint `Status: blocked`, record evidence in `implement.md`, and report the blocked state; call `update_goal(status="blocked")` only under the native blocked-threshold policy
 
 Use `BLOCKED` for conditions such as:
 

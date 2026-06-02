@@ -1,5 +1,5 @@
 {
-  "name": "@kun/trellis",
+  "name": "psymoth",
   "version": "0.6.0-beta.21",
   "description": "AI capabilities grow like ivy — Trellis provides the structure to guide them along a disciplined path",
   "type": "module",
@@ -52,7 +52,7 @@
   "author": "kun",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "@kun/trellis-core": "workspace:*",
+    "psymoth-core": "workspace:*",
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
     "figlet": "^1.9.4",

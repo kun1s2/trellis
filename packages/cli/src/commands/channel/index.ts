@@ -27,7 +27,7 @@ import { channelTitleClear, channelTitleSet } from "./title.js";
 import { runSupervisor } from "./supervisor.js";
 import { channelWait, parseDuration } from "./wait.js";
 import { parseCsv } from "./store/schema.js";
-import { parseInboxPolicy } from "@kun/trellis-core/channel";
+import { parseInboxPolicy } from "psymoth-core/channel";
 
 function parseNonNegativeInteger(value: string): number {
   if (!/^\d+$/.test(value)) {

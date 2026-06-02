@@ -42,4 +42,4 @@ Use these defaults only as starting points. Project `AGENTS.md`, `.trellis/spec/
 
 ## Unknown
 
-Derive commands from repository scripts and Trellis specs. If commands cannot be found, record an assumption and create a verification slice that discovers the right command before implementation.
+Derive commands from repository scripts and Trellis specs. If commands cannot be found, record an assumption and create a verification checkpoint that discovers the right command before implementation.

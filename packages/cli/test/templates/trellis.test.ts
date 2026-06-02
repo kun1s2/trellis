@@ -160,10 +160,14 @@ describe("trellis template constants", () => {
     const inProgressInline = workflowStateBreadcrumb("in_progress-inline");
 
     expect(noTask).toContain("load `trellis-goal`");
+    expect(noTask).toContain("create_goal");
     expect(planning).toContain("initialized or converted by `trellis-goal`");
+    expect(planning).toContain("Codex native goal state");
     expect(inProgress).toContain("Goal execution override");
-    expect(inProgress).toContain("Run-To-Completion Loop");
+    expect(inProgress).toContain("Codex native goal state");
+    expect(inProgress).toContain("rather than a local queue");
     expect(inProgressInline).toContain("Goal execution override");
+    expect(inProgressInline).toContain("Codex native goal state");
   });
 
   it("[trellis-goal] workflow.md routes attended and unattended grilling", () => {

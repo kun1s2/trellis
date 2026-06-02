@@ -1,12 +1,12 @@
 /**
- * Public surface for `@kun/trellis-core/mem` — reusable retrieval and
+ * Public surface for `psymoth-core/mem` — reusable retrieval and
  * dialogue-context extraction over persisted Claude Code / Codex / OpenCode
  * sessions.
  *
  * This subpackage is intentionally NOT re-exported from the root
- * `@kun/trellis-core` barrel. Import it explicitly:
+ * `psymoth-core` barrel. Import it explicitly:
  *
- *   import { searchMemSessions } from "@kun/trellis-core/mem";
+ *   import { searchMemSessions } from "psymoth-core/mem";
  *
  * v1 scope: persisted-session search and context extraction only. It does not
  * read channel / forum / thread event logs and has no cursor / pagination.

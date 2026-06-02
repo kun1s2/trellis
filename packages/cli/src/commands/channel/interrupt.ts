@@ -1,7 +1,4 @@
-import {
-  requestInterrupt,
-  type ChannelScope,
-} from "@kun/trellis-core/channel";
+import { requestInterrupt, type ChannelScope } from "psymoth-core/channel";
 
 import { parseChannelScope } from "./store/schema.js";
 import { resolveChannelTextBody } from "./text-body.js";

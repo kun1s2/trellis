@@ -2,14 +2,11 @@ export {
   reduceThreads,
   buildThreadAliasResolver,
   collectThreadTimeline,
-} from "@kun/trellis-core/channel";
+} from "psymoth-core/channel";
 
-export type {
-  ThreadState,
-  ThreadAliasResolver,
-} from "@kun/trellis-core/channel";
+export type { ThreadState, ThreadAliasResolver } from "psymoth-core/channel";
 
-import type { ThreadState } from "@kun/trellis-core/channel";
+import type { ThreadState } from "psymoth-core/channel";
 
 export function formatThreadBoard(states: ThreadState[]): string[] {
   if (states.length === 0) return ["(no threads)"];

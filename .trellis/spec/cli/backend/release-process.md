@@ -10,8 +10,8 @@ Trellis publishes two npm packages from one git tag:
 
 | Package | Role | Published by |
 |---|---|---|
-| `@kun/trellis` | User-facing CLI | GitHub Actions only |
-| `@kun/trellis-core` | Programmatic core APIs used by the CLI and external integrations | GitHub Actions only |
+| `psymoth` | User-facing CLI | GitHub Actions only |
+| `psymoth-core` | Programmatic core APIs used by the CLI and external integrations | GitHub Actions only |
 
 The package pair is version-locked. Every published version must exist for both packages with the exact same version and npm dist-tag.
 
@@ -28,8 +28,8 @@ If a CI publish looks partial or inconsistent:
 1. Inspect the GitHub Actions publish run.
 2. Verify public npm visibility:
    ```bash
-   npm view @kun/trellis@<version> version dist-tags --json --registry=https://registry.npmjs.org/
-   npm view @kun/trellis-core@<version> version dist-tags --json --registry=https://registry.npmjs.org/
+   npm view psymoth@<version> version dist-tags --json --registry=https://registry.npmjs.org/
+   npm view psymoth-core@<version> version dist-tags --json --registry=https://registry.npmjs.org/
    ```
 3. Fix the workflow or release scripts.
 4. Re-run the CI path or move the tag after the fix when the same version is still the intended release artifact.
@@ -52,7 +52,7 @@ node packages/cli/scripts/release-preflight.js verify-npm --package all
 | Shared tag | Git tag `v<version>` must match both package versions. |
 | Shared npm dist-tag | `beta` for `-beta.N`, `rc` for `-rc.N`, `alpha` for `-alpha.N`, `latest` for GA. |
 | Source dependency | CLI source depends on core with `workspace:*`. |
-| Packed dependency | Published CLI package must depend on `@kun/trellis-core` with the exact release version. |
+| Packed dependency | Published CLI package must depend on `psymoth-core` with the exact release version. |
 
 `packages/cli/scripts/release-preflight.js` is the source of truth for these checks.
 
@@ -176,8 +176,8 @@ Required order:
 5. `pnpm build`
 6. `release-preflight verify-packed-cli`
 7. `release-preflight publish-plan --github`
-8. publish `@kun/trellis-core` if missing
-9. publish `@kun/trellis` if missing
+8. publish `psymoth-core` if missing
+9. publish `psymoth` if missing
 10. `release-preflight verify-npm --package all`
 
 Core publishes first because the CLI package depends on the exact core version in the packed artifact.
@@ -212,7 +212,7 @@ the npm package contains it.
 Example for a built-in multi-file skill:
 
 ```bash
-pnpm --filter @kun/trellis build
+pnpm --filter psymoth build
 
 cd packages/cli
 npm pack --dry-run --json | grep 'dist/templates/common/bundled-skills/<skill>/SKILL.md'

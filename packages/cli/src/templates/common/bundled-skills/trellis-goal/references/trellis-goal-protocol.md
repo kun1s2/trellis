@@ -1,133 +1,106 @@
 # Trellis Goal Protocol
 
-Trellis Goal prepares and executes a normal Trellis task with a Goal Contract. It does not replace Trellis phases, status values, commit policy, or finish/archive flow.
+Trellis Goal prepares a normal Trellis task and bridges it into Codex native goal mode. It does not replace Trellis phases, status values, commit policy, finish/archive flow, or Codex native goal state.
 
-## Cadence
+## Ownership Boundary
 
-### One Slice Per Turn
+| Owner | State |
+|---|---|
+| Trellis | `task.json`, `prd.md`, `design.md`, `implement.md`, optional `implement.jsonl` / `check.jsonl`, and `research/` |
+| Codex native goal | active unattended execution state created by `create_goal` and inspected with `get_goal` |
 
-Default cadence. Execute one pending `implement.md` Task Slice, record evidence, update progress, then stop so the client can continue automatically.
-
-This is a throttle, not a scope limit. Do not ask the user to invoke `/goal` again between slices.
-
-### Run To Completion
-
-Use only when the user explicitly asks to run to completion, run the whole parent task, drain all pending slices, `一次性跑完`, `跑完整个父 task`, or equivalent.
-
-In this cadence, finish initialization first, then continue executing pending slices in the same assistant turn until finalization or a terminal stop condition.
+`implement.md` checkpoints are evidence and recovery landmarks. They help the native goal resume and report progress; they are not a local queue, mailbox, or second execution runtime.
 
 ## Initialization
 
-1. **Resolve entry source**
-   - new request: create a normal Trellis task
-   - planning conversion: use the current planning task
-   - in-progress conversion: audit existing work and add `Reconcile Existing Work` as the first slice
+1. **Inspect native goal state**
+   If `get_goal` is available, call it before creating or bridging. Do not create a second native goal when one is already active.
 
-2. **Register visible work**
-   Use the platform todo/task tool when available. This is only per-turn visibility; durable state lives in Trellis files.
+2. **Resolve entry source**
+   - new request: create a normal Trellis task
+   - planning conversion: use the current planning task and preserve useful PRD material
+   - in-progress conversion: audit existing work and add a `Reconcile Existing Work` checkpoint
 
 3. **Write the Goal Contract**
    Preserve the raw request in `prd.md`, then write `Goal Contract`, `Default Assumptions`, `Acceptance Criteria`, `Out of Scope`, and `Initialization Gate Evidence`.
 
-4. **Handle ambiguity**
+4. **Write the technical boundary**
+   Use `design.md` for project detection, relevant files, architecture decisions, verification commands, risks, and rollback notes.
+
+5. **Write checkpoint evidence plan**
+   Use `implement.md`. Each checkpoint should have:
+   - type: work or check
+   - status: pending / in_progress / blocked / done
+   - acceptance or verification evidence required
+   - work performed, remaining risk, and next step fields
+
+   Checkpoints should be small enough that a resumed native goal can tell what evidence is missing. They do not impose a local per-turn execution cadence.
+
+6. **Configure context**
+   Add relevant specs and research files to `implement.jsonl` and `check.jsonl` only when the local workflow/platform uses context manifests. For inline Codex work, recording the same context plan in `prd.md` or `design.md` is acceptable.
+
+7. **Handle ambiguity**
    Apply `ambiguity-handling.md`:
-   - low risk: default assumption and continue
-   - medium: use `trellis-grill-agents`
-   - high risk: `BLOCKED`
-
-5. **Write technical notes**
-   Use `info.md` for project detection, relevant files, verification commands, risks, and rollback notes.
-
-6. **Write execution slices**
-   Use `implement.md`. Every slice must have:
-   - `Slice Type: work` or `Slice Type: check`
-   - `Status: pending`
-   - an independent acceptance check
-   - fields for work performed, verification evidence, remaining risk, and next step
-
-   Insert one comprehensive check slice after every three non-check work slices. Check slices do not count toward the next group of three work slices.
-
-7. **Configure context**
-   Add relevant specs and research files to `implement.jsonl` and `check.jsonl`, or record the equivalent manifest in `prd.md`/`info.md` when the workflow is explicitly inline-only.
+   - low risk: record a default assumption and continue
+   - medium: use `trellis-grill-agents` only for evidence-backed pressure testing
+   - high risk: record the blocker and do not call `create_goal`
 
 8. **Mark the task**
-   Run `task.py mark-goal` with the correct `--source` and `--cadence`. Do not hand-edit `task.json`.
+   Run `task.py mark-goal` with the correct `--source` and cadence hint. Do not hand-edit `task.json`.
 
 9. **Gate and activate**
-   If the initialization gate passes:
-   - for a planning task, run `task.py start <task>` when needed
-   - for an already in-progress task, do not reset status
-   - output `TRELLIS_GOAL_INIT_DONE` only when the turn stops after initialization
+   If initialization passes, start the Trellis task when needed, then call Codex native `create_goal` with a compact bridge objective. If initialization fails, record `## Blocked Initialization` or `## Blocked Codex Native Goal Handoff` and do not simulate goal execution locally.
 
-   If the gate fails:
-   - record `## Blocked Initialization` in `prd.md`
-   - do not start a planning task
-   - output `TRELLIS_GOAL_INIT_BLOCKED`
+## Native Handoff
+
+The `create_goal.objective` text is a compact pointer to Trellis artifacts. It should include:
+
+- active task path
+- files to read first
+- one-line objective summary
+- next checkpoint hint
+- verification/reporting policy
+- instruction to update Trellis artifacts with evidence, blockers, risks, and final status
+- instruction to use `update_goal` only for genuine complete or blocked terminal states
+
+Do not paste the full raw request, full Goal Contract, checkpoint list, project rules, or spec excerpts into the native objective when those details already live in Trellis files.
 
 ## Continuation
 
 At the start of every continuation:
 
-1. Run or mentally reproduce `task.py goal-info <task>`.
-2. Read `task.json`, `prd.md`, `info.md`, `implement.md`, `implement.jsonl`, and `check.jsonl`.
-3. Confirm cadence from `task.json.meta.trellis_goal.cadence` and the current user message.
-4. Execute the next pending slice.
-5. Verify with evidence before marking it `done`.
-6. Update the slice fields and `Progress Log`.
+1. Use `get_goal` when available and apply the native status policy.
+2. Run or mentally reproduce `task.py goal-info <task>`.
+3. Read `task.json`, `prd.md`, `design.md`, `implement.md`, and context manifests when present.
+4. Continue the active native goal objective.
+5. Update `implement.md` with work performed, verification evidence, remaining risk, and next checkpoint.
 
-Evidence can be diff review, command output, logs, tests, typecheck, build, UI inspection, file review, or another concrete artifact suited to the slice. Do not mark a slice `done` from confidence alone.
+Evidence can be diff review, command output, logs, tests, typecheck, build, UI inspection, file review, or another concrete artifact suited to the checkpoint. Do not mark a checkpoint done from confidence alone.
 
-## Run-To-Completion Loop
+## Native Status Policy
 
-When cadence is `run-to-completion`:
+- `Active`: continue the objective and keep Trellis artifacts current.
+- `Paused`: do not continue automatically; report that the native goal is paused.
+- `BudgetLimited`: report the exhausted user-supplied budget; do not mark blocked or complete.
+- `UsageLimited`: report the product/account limit; do not mark blocked.
+- `Blocked`: continue only after the blocker is resolved or the user resumes the goal.
+- `Complete`: do not continue or create a replacement unless the user explicitly starts a new goal.
 
-1. Execute the first incomplete slice.
-2. Verify and record evidence.
-3. Immediately continue to the next incomplete slice.
-4. Run comprehensive check slices at their planned positions.
-5. Stop only at finalization or a terminal stop condition.
+## Blocking
 
-Terminal stop conditions:
+Record the blocker in Trellis artifacts before stopping. Use `update_goal(status="blocked")` only when the same blocking condition has repeated for the required Codex blocked threshold, or when a Goal Contract `Stop If` condition makes further work unsafe.
 
-- a Goal Contract `Stop If` condition triggers
-- initialization, slice verification, or a comprehensive check finds an unresolved blocker
-- the next action needs destructive data changes, production credentials, auth/payment/deployment changes, or other high-risk scope not explicitly allowed
-- Trellis commit confirmation is required before continuing safely
-- evidence cannot be preserved accurately due to context or tool-output limits
-- the user pauses, redirects, or cancels the goal
-
-When stopping early, update `implement.md` and report the blocked or paused state. Do not present an early stop as completion.
-
-## Comprehensive Check Slice
-
-Check all relevant dimensions before continuing:
-
-- requirements drift
-- code correctness
-- lint/typecheck/build
-- targeted and regression tests
-- UI/UX states if relevant
-- security and permission boundaries
-- data consistency and migrations
-- docs/spec synchronization
-- rollback plan
-- dirty git state and unrecognized files
-
-Record results in the check slice.
+Do not use blocked merely because the work is hard, incomplete, or would benefit from clarification.
 
 ## Finalization
 
-When no pending slices remain:
+When the Goal Contract is satisfied:
 
-1. Run final verification against the Goal Contract.
-2. Fix high-risk issues found by final verification.
-3. Run Trellis spec update judgment.
-4. Follow Trellis Phase 3.4 commit confirmation policy.
-5. Finish/archive through the normal Trellis workflow.
-6. Output:
-
-```text
-TRELLIS_GOAL_COMPLETE
-```
+1. Verify every `Done When` item with evidence.
+2. Confirm no `Stop If` condition is active.
+3. Run required tests, lint, typecheck, build, screenshots, or static checks.
+4. Update `implement.md` and task artifacts with final evidence and remaining risks.
+5. Follow Trellis Phase 3.4 commit confirmation and finish/archive policy.
+6. Call `update_goal(status="complete")` only when no required work remains.
 
 If commit confirmation or archive policy requires user confirmation, record the pending plan and stop there; do not claim full completion until the normal Trellis finish path is complete.

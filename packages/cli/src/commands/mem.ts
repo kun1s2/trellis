@@ -1,5 +1,5 @@
 /**
- * mem.ts — CLI wrapper over `@kun/trellis-core/mem`.
+ * mem.ts — CLI wrapper over `psymoth-core/mem`.
  *
  * The reusable retrieval / context-extraction logic lives in core; this file
  * owns only CLI concerns: argument parsing, terminal rendering, the OpenCode
@@ -25,14 +25,14 @@ import {
   MemSessionNotFoundError,
   readMemContext,
   searchMemSessions,
-} from "@kun/trellis-core/mem";
+} from "psymoth-core/mem";
 import type {
   MemFilter,
   MemPhase,
   MemSessionInfo,
   MemSourceFilter,
   MemSourceKind,
-} from "@kun/trellis-core/mem";
+} from "psymoth-core/mem";
 
 // ---------- argv ----------
 

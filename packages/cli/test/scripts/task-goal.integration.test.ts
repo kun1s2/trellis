@@ -146,24 +146,24 @@ describe.skipIf(PYTHON_CMD === null)("task.py Trellis goal commands", () => {
     expect(taskJson.meta.trellis_goal.updated_at.length).toBeGreaterThan(0);
   });
 
-  it("goal-info reports metadata and implement.md slice summary", () => {
-    const taskDir = writeTask(tmp, "05-31-sliced-goal", "in_progress");
+  it("goal-info reports metadata and implement.md checkpoint summary", () => {
+    const taskDir = writeTask(tmp, "05-31-checkpoint-goal", "in_progress");
     fs.writeFileSync(
       path.join(taskDir, "implement.md"),
       `# Implementation Plan
 
-## Task Slices
+## Checkpoints
 
-### Slice 1: Reconcile Existing Work
-- Slice Type: work
+### Checkpoint 1: Reconcile Existing Work
+- Type: work
 - Status: done
 
-### Slice 2: Add focused tests
-- Slice Type: work
+### Checkpoint 2: Add focused tests
+- Type: work
 - Status: pending
 
-### Slice 3: Comprehensive Check
-- Slice Type: check
+### Checkpoint 3: Comprehensive Check
+- Type: check
 - Status: blocked
 `,
     );
@@ -171,23 +171,23 @@ describe.skipIf(PYTHON_CMD === null)("task.py Trellis goal commands", () => {
     const mark = runTask(
       tmp,
       "mark-goal",
-      "05-31-sliced-goal",
+      "05-31-checkpoint-goal",
       "--source",
       "in-progress-task",
     );
     expect(mark.status).toBe(0);
 
-    const info = runTask(tmp, "goal-info", "05-31-sliced-goal");
+    const info = runTask(tmp, "goal-info", "05-31-checkpoint-goal");
 
     expect(info.status).toBe(0);
     expect(info.stdout).toContain("Enabled: true");
-    expect(info.stdout).toContain("Cadence: one-slice-per-turn");
+    expect(info.stdout).toContain("Cadence: checkpoint-bounded");
     expect(info.stdout).toContain("Source: in-progress-task");
     expect(info.stdout).toContain("Converted From Status: in_progress");
     expect(info.stdout).toContain("Total: 3");
     expect(info.stdout).toContain("done: 1");
     expect(info.stdout).toContain("pending: 1");
     expect(info.stdout).toContain("blocked: 1");
-    expect(info.stdout).toContain("Next: Slice 2: Add focused tests (pending)");
+    expect(info.stdout).toContain("Next: Checkpoint 2: Add focused tests (pending)");
   });
 });

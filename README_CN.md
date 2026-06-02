@@ -20,8 +20,8 @@
 </p>
 
 <p align="center">
-<a href="https://www.npmjs.com/package/@kun/trellis"><img src="https://img.shields.io/npm/v/@kun/trellis.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
-<a href="https://www.npmjs.com/package/@kun/trellis"><img src="https://img.shields.io/npm/dw/@kun/trellis?style=flat-square&color=cb3837&label=downloads" alt="npm downloads" /></a>
+<a href="https://www.npmjs.com/package/psymoth"><img src="https://img.shields.io/npm/v/psymoth.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/psymoth"><img src="https://img.shields.io/npm/dw/psymoth?style=flat-square&color=cb3837&label=downloads" alt="npm downloads" /></a>
 <a href="https://github.com/kun1s2/trellis/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-16a34a.svg?style=flat-square" alt="license" /></a>
 <a href="https://github.com/kun1s2/trellis/stargazers"><img src="https://img.shields.io/github/stars/kun1s2/trellis?style=flat-square&color=eab308" alt="stars" /></a>
 <a href="https://docs.trytrellis.app/zh"><img src="https://img.shields.io/badge/docs-trytrellis.app-0f766e?style=flat-square" alt="docs" /></a>
@@ -65,7 +65,7 @@
 
 ```bash
 # 1. 安装 Trellis
-npm install -g @kun/trellis@latest
+npm install -g psymoth@latest
 
 # 2. 在仓库里初始化
 trellis init -u your-name

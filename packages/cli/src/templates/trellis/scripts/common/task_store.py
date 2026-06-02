@@ -7,7 +7,7 @@ Provides:
     cmd_create         - Create a new task
     cmd_archive        - Archive completed task
     cmd_mark_goal      - Mark a task as a Trellis goal
-    cmd_goal_info      - Show Trellis goal metadata and slice summary
+    cmd_goal_info      - Show Trellis goal metadata and checkpoint summary
     cmd_set_branch     - Set git branch for task
     cmd_set_base_branch - Set PR target branch
     cmd_set_scope      - Set scope for PR title
@@ -228,8 +228,8 @@ def _goal_metadata(data: dict) -> dict | None:
     return trellis_goal
 
 
-def _parse_goal_slices(implement_path: Path) -> tuple[int, dict[str, int], str | None]:
-    """Parse implement.md slice headings and status lines."""
+def _parse_goal_checkpoints(implement_path: Path) -> tuple[int, dict[str, int], str | None]:
+    """Parse implement.md checkpoint headings and status lines."""
     counts: dict[str, int] = {
         "pending": 0,
         "in_progress": 0,
@@ -240,15 +240,15 @@ def _parse_goal_slices(implement_path: Path) -> tuple[int, dict[str, int], str |
     if not implement_path.is_file():
         return 0, counts, None
 
-    slices: list[tuple[str, str]] = []
+    checkpoints: list[tuple[str, str]] = []
     current_title: str | None = None
     current_status: str | None = None
 
     for line in implement_path.read_text(encoding="utf-8").splitlines():
-        heading = re.match(r"^###\s+(Slice\s+\d+:.+)$", line)
+        heading = re.match(r"^###\s+(Checkpoint\s+\d+:.+)$", line)
         if heading:
             if current_title is not None:
-                slices.append((current_title, current_status or "unknown"))
+                checkpoints.append((current_title, current_status or "unknown"))
             current_title = heading.group(1).strip()
             current_status = None
             continue
@@ -258,15 +258,15 @@ def _parse_goal_slices(implement_path: Path) -> tuple[int, dict[str, int], str |
             current_status = status.group(1).strip()
 
     if current_title is not None:
-        slices.append((current_title, current_status or "unknown"))
+        checkpoints.append((current_title, current_status or "unknown"))
 
-    next_slice: str | None = None
-    for title, status in slices:
+    next_checkpoint: str | None = None
+    for title, status in checkpoints:
         counts[status] = counts.get(status, 0) + 1
-        if next_slice is None and status != "done":
-            next_slice = f"{title} ({status})"
+        if next_checkpoint is None and status != "done":
+            next_checkpoint = f"{title} ({status})"
 
-    return len(slices), counts, next_slice
+    return len(checkpoints), counts, next_checkpoint
 
 
 def cmd_mark_goal(args: argparse.Namespace) -> int:
@@ -317,7 +317,7 @@ def cmd_mark_goal(args: argparse.Namespace) -> int:
 
 
 def cmd_goal_info(args: argparse.Namespace) -> int:
-    """Show Trellis goal metadata and slice summary."""
+    """Show Trellis goal metadata and checkpoint summary."""
     repo_root = get_repo_root()
     loaded = _read_task_json_for_command(args.dir, repo_root)
     if loaded is None:
@@ -340,12 +340,12 @@ def cmd_goal_info(args: argparse.Namespace) -> int:
         print(f"  Converted At: {goal.get('converted_at', '-')}")
         print(f"  Updated At: {goal.get('updated_at', '-')}")
 
-    total, counts, next_slice = _parse_goal_slices(task_dir / "implement.md")
-    print("Slices:")
+    total, counts, next_checkpoint = _parse_goal_checkpoints(task_dir / "implement.md")
+    print("Checkpoints:")
     print(f"  Total: {total}")
     for status in sorted(counts):
         print(f"  {status}: {counts[status]}")
-    print(f"  Next: {next_slice or '-'}")
+    print(f"  Next: {next_checkpoint or '-'}")
     return 0
 
 

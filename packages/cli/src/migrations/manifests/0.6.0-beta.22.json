@@ -1,0 +1,9 @@
+{
+  "version": "0.6.0-beta.22",
+  "description": "Beta patch: publish the Kun distribution as psymoth/psymoth-core and align Trellis Goal with Codex native goal mode.",
+  "breaking": false,
+  "recommendMigrate": false,
+  "changelog": "**Enhancements:**\n- feat(release): package metadata, release scripts, upgrade hints, and packed CLI checks now target `psymoth` and `psymoth-core`; install the beta with `npm install -g psymoth@beta` and import core APIs from `psymoth-core`, `psymoth-core/channel`, `psymoth-core/task`, or `psymoth-core/mem`.\n- feat(goal): `trellis-goal` now prepares Trellis task artifacts and bridges execution to Codex native goal mode with `create_goal`; `implement.md` uses checkpoint evidence instead of a local Task Slice loop.\n\n**Bug Fixes:**\n- fix(goal): `task.py goal-info` now reports `### Checkpoint N:` progress and `mark-goal` defaults to the `checkpoint-bounded` cadence hint.",
+  "migrations": [],
+  "notes": "Beta patch on top of 0.6.0-beta.21. Install with `npm install -g psymoth@beta` and run `trellis update` to refresh package-name, goal, and workflow templates. No migration command is required."
+}

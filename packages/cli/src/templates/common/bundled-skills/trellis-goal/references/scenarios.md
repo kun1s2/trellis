@@ -15,7 +15,7 @@ Use for a bounded subsystem or 1-3 files with a crisp after-state.
 
 Use when a structured spec already exists.
 
-- First slice reads the spec files and records counts or requirement IDs.
+- First checkpoint reads the spec files and records counts or requirement IDs.
 - Done when maps spec requirements to tests or implementation artifacts.
 - Stop if spec requirements conflict or require forbidden files.
 - In Trellis, link the spec and research artifacts through `implement.jsonl` and `check.jsonl`.
@@ -26,7 +26,7 @@ Use when there are N similar items from an enumerable source.
 
 - N must be explicit or mechanically enumerable.
 - Each item should have an independent verification row.
-- Every three items should be followed by a comprehensive check slice.
+- Every three items should be followed by a comprehensive check checkpoint.
 - Stop if an item changes state, cannot be reproduced, or requires a breaking change.
 
 ## Archaeology / Research

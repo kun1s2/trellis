@@ -6,7 +6,7 @@ description: "Use inside Trellis-managed projects for an unattended grill-me sty
 # Trellis Grill Agents
 
 Trellis Grill Agents is the unattended sibling of `trellis-grill-me`.
-It pressure-tests a Trellis task artifact with a real interviewer subagent while the main session records conservative proxy answers. It is a clarification and artifact-hardening routine, not the execution controller. `trellis-goal` still owns unattended task initialization, auto-advance, and run-to-completion execution.
+It pressure-tests a Trellis task artifact with a real interviewer subagent while the main session records conservative proxy answers. It is a clarification and artifact-hardening routine, not the execution controller. `trellis-goal` owns Trellis-backed goal preparation and Codex native goal handoff; Codex native goal state owns unattended execution.
 
 Read `references/details.md` only when exact role prompts, run artifact format, arbiter behavior, or deeper mode is needed.
 
@@ -55,7 +55,7 @@ Write only accepted, in-scope changes into the artifact under review:
 |---|---|
 | `prd.md` | Requirements, scope boundaries, non-goals, acceptance criteria, rejected options, user-visible risks, and unresolved human decisions. |
 | `design.md` / `info.md` | Architecture choices, interfaces, data flow, constraints, trade-offs, migration notes, and technical risks. |
-| `implement.md` | Execution slices, dependencies, ordering, verification checkpoints, rollback notes, and stop conditions. |
+| `implement.md` | Checkpoints, dependencies, ordering, verification evidence, rollback notes, and stop conditions. |
 | Grill run artifact | Transcript summary, disputed points, attempted problem changes, arbiter notes, blocked reasons, and anything not safe to promote into canonical task artifacts. |
 
 Use a grill run artifact instead of editing canonical artifacts when the proposed change would alter the frozen problem, when evidence is insufficient, when the interviewer and arbiter disagree, or when real human input is required.

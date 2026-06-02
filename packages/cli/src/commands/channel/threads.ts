@@ -8,7 +8,7 @@ import {
   type ChannelScope,
   type ContextChannelEvent,
   type ThreadChannelEvent,
-} from "@kun/trellis-core/channel";
+} from "psymoth-core/channel";
 
 import {
   parseChannelScope,

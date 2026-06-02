@@ -17,10 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Readable, Writable } from "node:stream";
 
-import {
-  DEFAULT_INBOX_POLICY,
-  type InboxPolicy,
-} from "@kun/trellis-core/channel";
+import { DEFAULT_INBOX_POLICY, type InboxPolicy } from "psymoth-core/channel";
 
 import { getAdapter, type Provider } from "./adapters/index.js";
 import { appendEvent } from "./store/events.js";

@@ -340,7 +340,7 @@ Examples:
   python3 task.py create "Add login feature" --slug add-login --package cli
   python3 task.py create "Child task" --slug child --parent .trellis/tasks/01-21-parent
   python3 task.py add-context <dir> implement .trellis/spec/cli/backend/auth.md "Auth guidelines"
-  python3 task.py mark-goal <dir> --source new-request --cadence one-slice-per-turn
+  python3 task.py mark-goal <dir> --source new-request --cadence checkpoint-bounded
   python3 task.py goal-info <dir>
   python3 task.py set-branch <dir> task/add-login
   python3 task.py start .trellis/tasks/01-21-add-login
@@ -454,9 +454,9 @@ def main() -> int:
     p_mark_goal.add_argument("dir", help="Task directory")
     p_mark_goal.add_argument(
         "--cadence",
-        choices=["one-slice-per-turn", "run-to-completion"],
-        default="one-slice-per-turn",
-        help="Goal execution cadence",
+        choices=["checkpoint-bounded", "run-to-completion"],
+        default="checkpoint-bounded",
+        help="Goal cadence hint for native handoff",
     )
     p_mark_goal.add_argument(
         "--source",

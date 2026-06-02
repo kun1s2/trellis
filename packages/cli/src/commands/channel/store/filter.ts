@@ -1,6 +1,6 @@
 export {
   MEANINGFUL_EVENT_KINDS,
   matchesEventFilter,
-} from "@kun/trellis-core/channel";
+} from "psymoth-core/channel";
 
-export type { ChannelEventFilter } from "@kun/trellis-core/channel";
+export type { ChannelEventFilter } from "psymoth-core/channel";

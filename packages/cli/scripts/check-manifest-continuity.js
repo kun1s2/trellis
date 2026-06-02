@@ -9,7 +9,7 @@
  * bucket of migrations.
  *
  * This guard runs before `pnpm version` bumps on every release track:
- *   1. Query npm for all published versions of @kun/trellis
+ *   1. Query npm for all published versions of psymoth
  *   2. Diff against local `src/migrations/manifests/*.json`
  *   3. Fail non-zero if any npm version lacks a local manifest
  *
@@ -31,7 +31,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MANIFESTS_DIR = path.join(__dirname, "../src/migrations/manifests");
-const PACKAGE_NAME = "@kun/trellis";
+const PACKAGE_NAME = "psymoth";
 
 /**
  * Historical npm versions whose manifests are permanently missing from the
