@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/cli/backend/script-conventions.md", "reason": "Python task script conventions, UTF-8 handling, and cross-platform script rules."}
+{"file": ".trellis/spec/cli/backend/configurator-shared.md", "reason": "Shared configurator and pull-based prelude contracts for class-2 platforms."}
+{"file": ".trellis/spec/cli/backend/workflow-state-contract.md", "reason": "Workflow breadcrumb and task lifecycle contract; avoid changing machine-readable status behavior."}
+{"file": ".trellis/spec/cli/unit-test/conventions.md", "reason": "Testing conventions for CLI template and integration changes."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Search-before-change and template sync / duplication guidance."}
+{"file": ".trellis/spec/guides/cross-platform-thinking-guide.md", "reason": "Windows, UTF-8, Python command, and generated text compatibility guidance."}

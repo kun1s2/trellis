@@ -40,3 +40,36 @@ Ported the Kun distribution onto the clean Trellis 0.6.0-beta.21 base, made mark
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: Architecture shaping workflow
+
+**Date**: 2026-06-04
+**Task**: Architecture shaping workflow
+**Branch**: `main`
+
+### Summary
+
+Added Trellis-native architecture shaping workflow for Codex: bundled skill, workflow routing, Codex implement/check/review prompt contracts, focused tests, and marketplace native workflow mirror commit 320b456.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `bab60ee4` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

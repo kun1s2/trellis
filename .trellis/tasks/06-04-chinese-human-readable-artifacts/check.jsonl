@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/cli/backend/script-conventions.md", "reason": "Verify Python script edits keep UTF-8 and cross-platform conventions."}
+{"file": ".trellis/spec/cli/backend/configurator-shared.md", "reason": "Verify shared prelude/configurator invariants remain intact."}
+{"file": ".trellis/spec/cli/backend/workflow-state-contract.md", "reason": "Verify workflow status and breadcrumb contract are not accidentally changed."}
+{"file": ".trellis/spec/cli/unit-test/conventions.md", "reason": "Verify tests match project conventions and cover changed behavior."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Review for missed duplicate template paths or unsynced sources of truth."}
+{"file": ".trellis/spec/guides/cross-platform-thinking-guide.md", "reason": "Review Windows / UTF-8 / generated command compatibility."}
