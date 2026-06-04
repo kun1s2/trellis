@@ -73,3 +73,42 @@ Added Trellis-native architecture shaping workflow for Codex: bundled skill, wor
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: Autonomous Trellis Goal workflow
+
+**Date**: 2026-06-04
+**Task**: Autonomous Trellis Goal workflow
+**Branch**: `main`
+
+### Summary
+
+Clarified delegated autonomy for Trellis Goal, added template contracts and regression coverage.
+
+### Main Changes
+
+- Added Trellis Goal delegated-autonomy contract language: Autonomy Charter, Frozen Invariants, Decision Harness, Autonomous Research Protocol, Evidence Chain, and Stop/Block boundaries.
+- Updated Codex native goal handoff guidance so active goals research, grill, decide, verify, and record evidence autonomously when the objective and invariants remain unchanged.
+- Synchronized the native workflow marketplace mirror and added focused template regression tests for the autonomous goal contract.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7758e99d` | (see git log) |
+
+### Testing
+
+- [OK] `pnpm test -- test/templates/trellis-goal-autonomy.test.ts test/templates/trellis.test.ts test/scripts/task-goal.integration.test.ts`
+- [OK] `pnpm exec eslint test/templates/trellis-goal-autonomy.test.ts`
+- [OK] `pnpm lint`
+- [OK] `pnpm typecheck`
+- [OK] `python .\.trellis\scripts\task.py validate '.trellis\tasks\06-04-optimize-trellis-autonomous-goal-workflow'`
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
