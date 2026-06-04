@@ -398,6 +398,9 @@ describe("collectPlatformTemplates", () => {
       expect(
         result?.has(`${skillRoot}/trellis-grill-agents/SKILL.md`),
       ).toBe(true);
+      expect(result?.has(`${skillRoot}/trellis-grill-me/SKILL.md`)).toBe(
+        true,
+      );
       expect(
         result?.has(
           `${skillRoot}/trellis-grill-agents/references/details.md`,
@@ -439,6 +442,20 @@ describe("collectPlatformTemplates", () => {
     expect(details).toContain("## Decision Ledger");
     expect(details).toContain("## Write-Back Promotion Test");
     expect(details).toContain("## Final Checklist");
+  });
+
+  it("trellis-grill-me bundled skill preserves attended Grill Gate contract", () => {
+    const result = collectPlatformTemplates("codex");
+    const skill = result?.get(".agents/skills/trellis-grill-me/SKILL.md");
+
+    expect(skill).toContain("name: trellis-grill-me");
+    expect(skill).toContain("attended Phase 1 Grill Gate");
+    expect(skill).toContain("Ask exactly one question at a time");
+    expect(skill).toContain("recommended answer");
+    expect(skill).toContain("Answer repository-answerable questions first");
+    expect(skill).toContain("write confirmed decisions");
+    expect(skill).toContain("Record unresolved human decisions as blockers");
+    expect(skill).toContain("trellis-grill-me required");
   });
 
   // POSIX-key invariant: collector keys feed the cross-platform hash

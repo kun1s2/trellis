@@ -177,10 +177,13 @@ describe("trellis template constants", () => {
     for (const block of [planning, planningInline]) {
       expect(block).toContain("Grill Gate");
       expect(block).toContain("skip grill, because ...");
+      expect(block).toContain("trellis-grill-me required");
       expect(block).toContain("trellis-grill-agents required");
-      expect(block).toContain("grill-me");
+      expect(block).toContain("trellis-grill-me");
       expect(block).toContain("evidence proves");
       expect(block).toContain("unattended/proxy answers");
+      expect(block).not.toContain("`grill-me required`");
+      expect(block).not.toContain("`grill-me` / `trellis-grill-me`");
     }
   });
 
@@ -223,9 +226,13 @@ describe("trellis template constants", () => {
 
     expect(brainstorm).toContain("## Grill Gate");
     expect(brainstorm).toContain("The Grill Gate result is recorded");
+    expect(brainstorm).toContain("trellis-grill-me required");
     expect(brainstorm).toContain("skip grill, because ...");
     expect(continueCommand).toContain("Grill Gate is missing");
     expect(continueCommand).toContain("Grill Gate recorded");
+    expect(continueCommand).toContain("trellis-grill-me required");
+    expect(brainstorm).not.toContain("`grill-me required`");
+    expect(continueCommand).not.toContain("`grill-me required`");
   });
   it("[issue-237] workflow.md in_progress breadcrumb self-exempts implement/check sub-agents", () => {
     // The in_progress breadcrumb may be injected into sub-agent turns on some

@@ -47,7 +47,8 @@ Use a concise title from the user's request. Use a slug without a date prefix. `
 4. Ask the single highest-value remaining question.
 5. Include your recommended answer with the question.
 6. After each user answer, update `prd.md` before continuing.
-7. For complex tasks, create or update `design.md` and `implement.md` before implementation starts.
+7. Make a Grill Gate decision before planning is declared ready.
+8. For complex tasks, create or update `design.md` and `implement.md` before implementation starts.
 
 Do not invent a project-specific product/spec hierarchy. If the repository already has product, domain, or spec docs, use them. If it does not, proceed with the evidence that exists.
 
@@ -90,6 +91,16 @@ Do not ask process questions such as whether to search, inspect files, or contin
 - risky files or rollback points
 - follow-up checks before `task.py start`
 
+## Grill Gate
+
+Before planning can be marked ready, record one of these decisions in `prd.md` for lightweight tasks or `implement.md` for complex tasks:
+
+- `trellis-grill-me required` - real user participation is needed for product intent, scope, preference, UX, compatibility, security, data integrity, or another authority-bound decision.
+- `trellis-grill-agents required` - no real user decision is needed, the task artifacts are complex or cross-layer enough to pressure-test, and the user has explicitly authorized unattended/proxy answers.
+- `skip grill, because ...` - the task is mechanical, low-risk, and acceptance is explicit from the user's request or repository evidence.
+
+Use a conservative default: if you cannot prove the skip criteria from repository/task evidence, choose a grill path. Use `trellis-grill-me` when real user decisions remain. Use `trellis-grill-agents` only when the user explicitly authorized unattended/proxy answers; if it exposes a real user decision, stop and route back to the user.
+
 Lightweight tasks may have only `prd.md`. Complex tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`.
 
 `implement.md` is not a replacement for `implement.jsonl`. Use JSONL files only for manifest-style spec and research references when the task needs them.
@@ -101,6 +112,7 @@ Before declaring planning ready:
 - `prd.md` contains testable acceptance criteria.
 - Repository-answerable questions have already been answered through inspection.
 - Remaining open questions are genuinely about user intent or scope.
+- The Grill Gate result is recorded, including the evidence-backed reason when skipping.
 - Complex tasks have `design.md` and `implement.md`.
 - The user has reviewed the final planning artifacts or explicitly approved proceeding.
 

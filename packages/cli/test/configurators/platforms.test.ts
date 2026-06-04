@@ -40,6 +40,7 @@ const BUNDLED_SKILL_NAMES = [
   "trellis-architecture-shaping",
   "trellis-goal",
   "trellis-grill-agents",
+  "trellis-grill-me",
   "trellis-meta",
   "trellis-spec-bootstarp",
 ];
@@ -78,6 +79,7 @@ const GRILL_AGENTS_DETAILS_REFERENCE = path.join(
   "references",
   "details.md",
 );
+const GRILL_ME_SKILL = path.join("trellis-grill-me", "SKILL.md");
 const SPEC_BOOTSTARP_REFERENCE = path.join(
   "trellis-spec-bootstarp",
   "references",
@@ -334,6 +336,7 @@ describe("configurePlatform", () => {
     expect(
       fs.existsSync(path.join(skillsRoot, GRILL_AGENTS_DETAILS_REFERENCE)),
     ).toBe(true);
+    expect(fs.existsSync(path.join(skillsRoot, GRILL_ME_SKILL))).toBe(true);
     expect(
       fs.existsSync(path.join(skillsRoot, ARCHITECTURE_SHAPING_SKILL)),
     ).toBe(true);
@@ -437,6 +440,7 @@ describe("configurePlatform", () => {
     expect(
       fs.existsSync(path.join(skillsRoot, GRILL_AGENTS_DETAILS_REFERENCE)),
     ).toBe(true);
+    expect(fs.existsSync(path.join(skillsRoot, GRILL_ME_SKILL))).toBe(true);
   });
 
   it("configurePlatform('gemini') creates .gemini directory", async () => {
@@ -610,6 +614,7 @@ describe("configurePlatform", () => {
     expect(
       fs.existsSync(path.join(skillsDir, GRILL_AGENTS_DETAILS_REFERENCE)),
     ).toBe(true);
+    expect(fs.existsSync(path.join(skillsDir, GRILL_ME_SKILL))).toBe(true);
 
     expect(actualSkillDirs).not.toContain("trellis-finish-work");
     expect(actualSkillDirs).not.toContain("trellis-continue");
@@ -856,6 +861,9 @@ describe("configurePlatform", () => {
       fs.existsSync(
         path.join(tmpDir, ".pi", "skills", GRILL_AGENTS_DETAILS_REFERENCE),
       ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.join(tmpDir, ".pi", "skills", GRILL_ME_SKILL)),
     ).toBe(true);
     expect(
       fs.existsSync(

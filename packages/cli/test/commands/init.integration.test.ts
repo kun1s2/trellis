@@ -218,6 +218,11 @@ describe("init() integration", () => {
     ).toBe(true);
     expect(
       fs.existsSync(
+        path.join(tmpDir, ".agents", "skills", "trellis-grill-me", "SKILL.md"),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
         path.join(
           tmpDir,
           ".agents",
@@ -274,6 +279,9 @@ describe("init() integration", () => {
     );
     expect(trackedPaths).toContain(
       ".agents/skills/trellis-architecture-shaping/SKILL.md",
+    );
+    expect(trackedPaths).toContain(
+      ".agents/skills/trellis-grill-me/SKILL.md",
     );
   });
 

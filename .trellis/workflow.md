@@ -163,6 +163,16 @@ Phase 3: Finish  → verify, update spec, commit, and wrap up
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 - Lightweight tasks may be PRD-only. Complex tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`.
 
+### Grill Gate
+
+Before planning can be marked ready, record a Grill Gate decision in `prd.md` for lightweight tasks or `implement.md` for complex tasks. The decision is one of:
+
+- `trellis-grill-me required` — real user participation is needed for product intent, scope, preference, UX, compatibility, security, data integrity, or another authority-bound decision.
+- `trellis-grill-agents required` — no real user decision is needed, the task artifacts are complex or cross-layer enough to pressure-test, and the user has explicitly authorized unattended/proxy answers.
+- `skip grill, because ...` — the task is mechanical, low-risk, and acceptance is explicit from the user's request or repository evidence.
+
+Use a conservative default: if the AI cannot prove the skip criteria from repository/task evidence, it must choose a grill path. `trellis-grill-me` is the attended Grill Gate executor; `trellis-grill-agents` is for artifact pressure-testing only and must route real user decisions back to `trellis-grill-me`.
+
 ### Parent / Child Task Trees
 
 Use a parent task when one user request contains several independently verifiable deliverables. The parent task owns the source requirement set, the task map, cross-child acceptance criteria, and final integration review; it normally should not be the implementation target unless it also has direct work.
@@ -192,7 +202,9 @@ Complex task: ask the user if you can create a Trellis task and enter the planni
 
 [workflow-state:planning]
 If this task was initialized or converted by `trellis-goal`, load `trellis-goal` and follow `prd.md` Goal Contract plus `implement.md` checkpoints; bridge or continue through Codex native goal state instead of running a local Trellis execution loop.
-Otherwise, load `trellis-brainstorm`; stay in planning. If unresolved product, scope, or preference decisions remain, default to `trellis-grill-me`; use `trellis-grill-agents` only when the user explicitly authorizes unattended/proxy answers.
+Otherwise, load `trellis-brainstorm`; stay in planning and make an explicit Grill Gate decision before start.
+Grill Gate: record `trellis-grill-me required`, `trellis-grill-agents required`, or `skip grill, because ...` in the task artifacts. The AI may skip only when evidence proves the task is mechanical, low-risk, and acceptance is explicit.
+Use `trellis-grill-me` when real user product, scope, preference, UX, compatibility, security, or data-integrity decisions remain. Use `trellis-grill-agents` only when the user explicitly authorized unattended/proxy answers; if it surfaces a real user decision, stop and route back to the user.
 Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
 Multi-deliverable scope: consider a parent task plus independently verifiable child tasks; dependencies must be written in child artifacts, not implied by tree position.
 Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research manifests before start.
@@ -206,7 +218,9 @@ Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research mani
 
 [workflow-state:planning-inline]
 If this task was initialized or converted by `trellis-goal`, load `trellis-goal` and follow `prd.md` Goal Contract plus `implement.md` checkpoints; bridge or continue through Codex native goal state instead of running a local Trellis execution loop.
-Otherwise, load `trellis-brainstorm`; stay in planning. If unresolved product, scope, or preference decisions remain, default to `trellis-grill-me`; use `trellis-grill-agents` only when the user explicitly authorizes unattended/proxy answers.
+Otherwise, load `trellis-brainstorm`; stay in planning and make an explicit Grill Gate decision before start.
+Grill Gate: record `trellis-grill-me required`, `trellis-grill-agents required`, or `skip grill, because ...` in the task artifacts. The AI may skip only when evidence proves the task is mechanical, low-risk, and acceptance is explicit.
+Use `trellis-grill-me` when real user product, scope, preference, UX, compatibility, security, or data-integrity decisions remain. Use `trellis-grill-agents` only when the user explicitly authorized unattended/proxy answers; if it surfaces a real user decision, stop and route back to the user.
 Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
 Multi-deliverable scope: consider a parent task plus independently verifiable child tasks; dependencies must be written in child artifacts, not implied by tree position.
 Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-before-dev`.
@@ -347,6 +361,7 @@ The brainstorm skill will guide you to:
 - Split large scopes into a parent task plus child tasks when the deliverables can be verified independently
 - Keep `prd.md` focused on requirements and acceptance criteria
 - For complex tasks, produce `design.md` and `implement.md` before implementation starts
+- Make and record the Grill Gate decision before planning is declared ready
 
 When considering a parent/child split:
 - Use a parent task when one request contains several independently verifiable deliverables.
@@ -355,7 +370,7 @@ When considering a parent/child split:
 - Parent/child structure is not a dependency system. If child B depends on child A, write that ordering in child B's `prd.md` / `implement.md`.
 - Start the child task that owns the next deliverable. Do not start the parent unless the parent itself has direct implementation work.
 
-Return to this step whenever requirements change and revise the relevant artifact.
+Return to this step whenever requirements change and revise the relevant artifact. A material requirement or design change invalidates the previous Grill Gate unless its recorded reason still applies.
 
 #### 1.2 Research `[optional · repeatable]`
 
@@ -447,7 +462,7 @@ After artifact review, flip the task status to `in_progress`:
 python3 ./.trellis/scripts/task.py start <task-dir>
 ```
 
-For lightweight tasks, `prd.md` can be enough. For complex tasks, `prd.md`, `design.md`, and `implement.md` must exist and be reviewed before start. On sub-agent-capable platforms, curate jsonl manifests when extra spec or research context is needed; seed-only manifests are tolerated by consumers.
+For lightweight tasks, `prd.md` can be enough. For complex tasks, `prd.md`, `design.md`, and `implement.md` must exist and be reviewed before start. A recorded Grill Gate decision is required in all cases. On sub-agent-capable platforms, curate jsonl manifests when extra spec or research context is needed; seed-only manifests are tolerated by consumers.
 
 After this command succeeds, the breadcrumb auto-switches to `[workflow-state:in_progress]`, and the rest of Phase 2 / 3 follows.
 
@@ -458,6 +473,7 @@ If `task.py start` errors with a session-identity message (no context key from h
 | Condition | Required |
 |------|:---:|
 | `prd.md` exists | ✅ |
+| Grill Gate result is recorded in `prd.md` or `implement.md` | ✅ |
 | User confirms task should enter implementation | ✅ |
 | `task.py start` has been run (status = in_progress) | ✅ |
 | `research/` has artifacts (complex tasks) | recommended |
