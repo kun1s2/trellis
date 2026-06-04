@@ -585,6 +585,14 @@ If \`${jsonl}\` has no curated entries (only a seed row, or the file is missing)
 
 If the resolved task path has no \`prd.md\`, ask the user what to work on; do NOT proceed without context.
 
+### Step 3: Human-readable artifact language
+
+When you write or update human-readable task artifacts or Markdown summaries, use Chinese by default and preserve original English technical terms. This applies to \`prd.md\`, \`design.md\`, \`implement.md\`, check summaries, review notes, and similar human-facing Markdown.
+
+Do not translate filenames, commands, status values, JSON keys, API names, package names, symbol names, or Trellis workflow terms such as \`PRD\`, \`task\`, \`workflow\`, \`Grill Gate\`, \`sub-agent\`, and \`quality gate\`.
+
+Do not localize machine-readable artifacts: keep \`task.json\`, \`implement.jsonl\`, \`check.jsonl\`, schema keys, status values, CLI arguments, and filenames stable.
+
 ---
 
 `);

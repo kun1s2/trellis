@@ -158,27 +158,29 @@ def _write_seed_jsonl(path: Path) -> None:
 
 def _default_prd_content(title: str, description: str | None = None) -> str:
     """Return the default PRD skeleton created with every task."""
-    goal = (description or "").strip() or "TBD."
+    goal = (description or "").strip() or "待补充。"
     heading = title.strip() or "Untitled task"
     return f"""# {heading}
 
-## Goal
+## Goal / 目标
 
 {goal}
 
-## Requirements
+## Requirements / 需求
 
-- TBD
+- 用中文写清楚这个 `task` 必须满足的需求。
+- 保留原始 English technical terms，例如 file name、command、status value、JSON key、API name、symbol name。
 
-## Acceptance Criteria
+## Acceptance Criteria / 验收标准
 
-- [ ] TBD
+- [ ] 用可验证的中文检查项描述完成标准，并保留相关 English technical terms。
 
-## Notes
+## Notes / 说明
 
-- Keep `prd.md` focused on requirements, constraints, and acceptance criteria.
-- Lightweight tasks can remain PRD-only.
-- For complex tasks, add `design.md` for technical design and `implement.md` for execution planning before `task.py start`.
+- `prd.md` 只记录 requirements、constraints 和 `Acceptance Criteria`，不要写 technical design 或 execution checklist。
+- Lightweight `task` 可以保持 PRD-only。
+- Complex `task` 在 `task.py start` 前补充 `design.md`（technical design）和 `implement.md`（execution planning）。
+- 人类阅读材料默认使用中文表达；`PRD`、`task`、`workflow`、`Grill Gate`、`sub-agent`、`quality gate` 等 technical terms 保留英文。
 """
 
 
@@ -537,16 +539,22 @@ def cmd_create(args: argparse.Namespace) -> int:
 
     print(colored(f"Created task: {dir_name}", Colors.GREEN), file=sys.stderr)
     print("", file=sys.stderr)
-    print(colored("Next steps:", Colors.BLUE), file=sys.stderr)
-    print("  - Fill prd.md with requirements and acceptance criteria", file=sys.stderr)
-    print("  - Lightweight task: PRD-only is valid", file=sys.stderr)
-    print("  - Complex task: add design.md and implement.md before task.py start", file=sys.stderr)
+    print(colored("Next steps / 下一步:", Colors.BLUE), file=sys.stderr)
+    print(
+        "  - 用中文补全 `prd.md` 的 requirements 和 `Acceptance Criteria`，保留 English technical terms",
+        file=sys.stderr,
+    )
+    print("  - Lightweight `task`: PRD-only is valid", file=sys.stderr)
+    print(
+        "  - Complex `task`: 在 `task.py start` 前补充 `design.md` 和 `implement.md`",
+        file=sys.stderr,
+    )
     if seeded_jsonl:
         print(
-            "  - Curate implement.jsonl / check.jsonl as spec/research manifests when sub-agents need context",
+            "  - 需要 sub-agent context 时，curate `implement.jsonl` / `check.jsonl` 作为 spec/research manifests",
             file=sys.stderr,
         )
-    print("  - Use /trellis:continue or phase context to decide the next step", file=sys.stderr)
+    print("  - 用 `/trellis:continue` 或 phase context 判断下一步", file=sys.stderr)
     print("", file=sys.stderr)
 
     # Output relative path for script chaining
