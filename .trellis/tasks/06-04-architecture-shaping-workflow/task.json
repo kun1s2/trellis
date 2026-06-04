@@ -1,0 +1,36 @@
+{
+  "id": "architecture-shaping-workflow",
+  "name": "architecture-shaping-workflow",
+  "title": "Integrate architecture shaping into Trellis workflow",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "codex",
+  "assignee": "codex",
+  "createdAt": "2026-06-04",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "trellis_goal": {
+      "enabled": true,
+      "version": 1,
+      "cadence": "checkpoint-bounded",
+      "source": "planning-task",
+      "converted_from_status": "planning",
+      "converted_at": "2026-06-04T20:01:27+08:00",
+      "updated_at": "2026-06-04T20:01:27+08:00"
+    }
+  }
+}

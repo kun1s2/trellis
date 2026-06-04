@@ -37,11 +37,16 @@ import {
 } from "../../src/configurators/shared.js";
 
 const BUNDLED_SKILL_NAMES = [
+  "trellis-architecture-shaping",
   "trellis-goal",
   "trellis-grill-agents",
   "trellis-meta",
   "trellis-spec-bootstarp",
 ];
+const ARCHITECTURE_SHAPING_SKILL = path.join(
+  "trellis-architecture-shaping",
+  "SKILL.md",
+);
 const BUNDLED_REFERENCE = path.join(
   "trellis-meta",
   "references",
@@ -328,6 +333,9 @@ describe("configurePlatform", () => {
     );
     expect(
       fs.existsSync(path.join(skillsRoot, GRILL_AGENTS_DETAILS_REFERENCE)),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.join(skillsRoot, ARCHITECTURE_SHAPING_SKILL)),
     ).toBe(true);
     expect(
       fs.existsSync(path.join(skillsRoot, "trellis-start", "SKILL.md")),

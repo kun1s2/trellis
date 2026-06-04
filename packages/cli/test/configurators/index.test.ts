@@ -403,7 +403,25 @@ describe("collectPlatformTemplates", () => {
           `${skillRoot}/trellis-grill-agents/references/details.md`,
         ),
       ).toBe(true);
+      expect(
+        result?.has(`${skillRoot}/trellis-architecture-shaping/SKILL.md`),
+      ).toBe(true);
     }
+  });
+
+  it("trellis-architecture-shaping bundled skill preserves production-shaped MVP contract", () => {
+    const result = collectPlatformTemplates("codex");
+    const skill = result?.get(
+      ".agents/skills/trellis-architecture-shaping/SKILL.md",
+    );
+
+    expect(skill).toContain("Trellis projects are long-lived by default");
+    expect(skill).toContain("research/architecture-shaping.md");
+    expect(skill).toContain("Accepted Constraints");
+    expect(skill).toContain("Recommended But Adjustable");
+    expect(skill).toContain("Rejected / Speculative Abstractions");
+    expect(skill).toContain("toy-MVP");
+    expect(skill).toContain("second sources of truth");
   });
 
   it("trellis-grill-agents bundled skill preserves unattended grill guardrails", () => {

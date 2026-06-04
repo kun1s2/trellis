@@ -175,12 +175,58 @@ describe("trellis template constants", () => {
     const planningInline = workflowStateBreadcrumb("planning-inline");
 
     for (const block of [planning, planningInline]) {
-      expect(block).toContain("trellis-grill-me");
-      expect(block).toContain("trellis-grill-agents");
+      expect(block).toContain("Grill Gate");
+      expect(block).toContain("skip grill, because ...");
+      expect(block).toContain("trellis-grill-agents required");
+      expect(block).toContain("grill-me");
+      expect(block).toContain("evidence proves");
       expect(block).toContain("unattended/proxy answers");
     }
   });
 
+  it("[trellis-architecture-shaping] workflow.md records Phase 1 trigger decisions", () => {
+    const planning = workflowStateBreadcrumb("planning");
+    const planningInline = workflowStateBreadcrumb("planning-inline");
+
+    expect(workflowMdTemplate).toContain("Production-shaped MVPs");
+    expect(workflowMdTemplate).toContain("### Architecture Shaping Decision");
+    expect(workflowMdTemplate).toContain("trellis-architecture-shaping");
+    expect(workflowMdTemplate).toContain("research/architecture-shaping.md");
+    expect(workflowMdTemplate).toContain("accepted constraints");
+
+    for (const block of [planning, planningInline]) {
+      expect(block).toContain("Architecture Shaping");
+      expect(block).toContain("Architecture Shaping: required");
+      expect(block).toContain("Architecture Shaping: skipped");
+      expect(block).toContain("toy-MVP implementation");
+    }
+  });
+
+  it("[trellis-grill] brainstorm and continue templates require an auditable Grill Gate", () => {
+    const repoRoot = fs.existsSync(path.join(process.cwd(), "packages"))
+      ? process.cwd()
+      : path.resolve(process.cwd(), "../..");
+    const brainstorm = fs.readFileSync(
+      path.join(
+        repoRoot,
+        "packages/cli/src/templates/common/skills/brainstorm.md",
+      ),
+      "utf-8",
+    );
+    const continueCommand = fs.readFileSync(
+      path.join(
+        repoRoot,
+        "packages/cli/src/templates/common/commands/continue.md",
+      ),
+      "utf-8",
+    );
+
+    expect(brainstorm).toContain("## Grill Gate");
+    expect(brainstorm).toContain("The Grill Gate result is recorded");
+    expect(brainstorm).toContain("skip grill, because ...");
+    expect(continueCommand).toContain("Grill Gate is missing");
+    expect(continueCommand).toContain("Grill Gate recorded");
+  });
   it("[issue-237] workflow.md in_progress breadcrumb self-exempts implement/check sub-agents", () => {
     // The in_progress breadcrumb may be injected into sub-agent turns on some
     // hosts, so its main-session dispatch guidance must not recursively apply

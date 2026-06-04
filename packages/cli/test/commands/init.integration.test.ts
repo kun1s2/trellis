@@ -272,6 +272,9 @@ describe("init() integration", () => {
     expect(trackedPaths).toContain(
       ".agents/skills/trellis-spec-bootstarp/references/spec-writing.md",
     );
+    expect(trackedPaths).toContain(
+      ".agents/skills/trellis-architecture-shaping/SKILL.md",
+    );
   });
 
   it("#3c kiro platform creates .kiro/skills", async () => {

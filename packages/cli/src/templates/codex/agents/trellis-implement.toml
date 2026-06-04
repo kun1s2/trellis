@@ -44,6 +44,9 @@ Rules:
 - Keep changes focused on the requested scope.
 - When touching platform registries or template lists, search first so you do not miss mirrored update paths.
 - If you modify `.trellis/scripts/`, keep `packages/cli/src/templates/trellis/scripts/` in sync.
+- Preserve necessary structure from `design.md`, `implement.md`, and any referenced `research/architecture-shaping.md`; accepted architecture constraints referenced by `design.md` or `implement.md` are binding unless you revise the artifact with evidence.
+- Small MVP scope is fine; toy architecture is not. Do not collapse durable domain behavior, cross-layer contracts, or testable seams into a one-file shortcut when the task artifacts require production-shaped structure.
+- Avoid speculative abstractions: add a seam only when it earns its cost through locality, leverage, testing value, or expected repeated change.
 - Do not make destructive git changes unless explicitly asked.
 
 Before finishing, summarize:

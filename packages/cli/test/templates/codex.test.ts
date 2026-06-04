@@ -117,6 +117,54 @@ describe("codex sub-agent recursion guard (issue #234)", () => {
   }
 });
 
+describe("codex architecture shaping prompts", () => {
+  it("trellis-implement preserves necessary architecture constraints", () => {
+    const content = fs.readFileSync(
+      path.join(
+        repoRoot,
+        "packages/cli/src/templates/codex/agents/trellis-implement.toml",
+      ),
+      "utf-8",
+    );
+
+    expect(content).toContain("Preserve necessary structure");
+    expect(content).toContain("research/architecture-shaping.md");
+    expect(content).toContain("Small MVP scope is fine; toy architecture is not");
+    expect(content).toContain("Avoid speculative abstractions");
+  });
+
+  it("trellis-check distinguishes architecture blockers from warnings", () => {
+    const content = fs.readFileSync(
+      path.join(
+        repoRoot,
+        "packages/cli/src/templates/codex/agents/trellis-check.toml",
+      ),
+      "utf-8",
+    );
+
+    expect(content).toContain("accepted architecture constraints");
+    expect(content).toContain("toy-MVP collapse");
+    expect(content).toContain("Block only current-task issues");
+    expect(content).toContain("task-external legacy debt");
+  });
+
+  it("trellis-code-architecture-review reads shaping output and blocks toy MVP failures", () => {
+    const content = fs.readFileSync(
+      path.join(
+        repoRoot,
+        "packages/cli/src/templates/codex/agents/trellis-code-architecture-review.toml",
+      ),
+      "utf-8",
+    );
+
+    expect(content).toContain("Architecture Shaping: required");
+    expect(content).toContain("research/architecture-shaping.md");
+    expect(content).toContain("toy one-file implementation");
+    expect(content).toContain("Blocking Versus Warning Standard");
+    expect(content).toContain("single file or module carrying multiple long-lived change axes");
+  });
+});
+
 describe("codex session-start.py compact SessionStart context", () => {
   const hookPath = path.join(
     repoRoot,

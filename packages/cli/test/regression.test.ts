@@ -3006,6 +3006,56 @@ describe("regression: current-task path normalization", () => {
     expect(data.next_action).toBeUndefined();
   });
 
+  it("[chinese-artifacts] task.py create writes Chinese prd.md skeleton and preserves English terms", () => {
+    setupTaskRepo();
+    const taskScriptPath = path.join(tmpDir, ".trellis", "scripts", "task.py");
+    const create = spawnSync(
+      pythonCmd,
+      [
+        taskScriptPath,
+        "create",
+        "Chinese artifact task",
+        "--slug",
+        "chinese-artifacts",
+        "--assignee",
+        "test-dev",
+      ],
+      { cwd: tmpDir, encoding: "utf-8" },
+    );
+    expect(create.status).toBe(0);
+    expect(create.stderr).toContain("Next steps / 下一步");
+    expect(create.stderr).toContain("用中文补全 `prd.md`");
+    expect(create.stderr).toContain("English technical terms");
+
+    const taskDirName = fs
+      .readdirSync(path.join(tmpDir, ".trellis", "tasks"))
+      .find((d) => d.includes("chinese-artifacts"));
+    expect(taskDirName).toBeDefined();
+    const taskDir = path.join(
+      tmpDir,
+      ".trellis",
+      "tasks",
+      taskDirName as string,
+    );
+    const prd = fs.readFileSync(path.join(taskDir, "prd.md"), "utf-8");
+    expect(prd).toContain("## Goal / 目标");
+    expect(prd).toContain("## Requirements / 需求");
+    expect(prd).toContain("## Acceptance Criteria / 验收标准");
+    expect(prd).toContain("用中文写清楚这个 `task`");
+    expect(prd).toContain("English technical terms");
+    expect(prd).toContain("`prd.md`");
+    expect(prd).toContain("`design.md`");
+    expect(prd).toContain("`implement.md`");
+    expect(prd).not.toContain("- TBD");
+
+    const taskJson = JSON.parse(
+      fs.readFileSync(path.join(taskDir, "task.json"), "utf-8"),
+    ) as Record<string, unknown>;
+    expect(taskJson.status).toBe("planning");
+    expect(taskJson.title).toBe("Chinese artifact task");
+    expect(taskJson["状态"]).toBeUndefined();
+  });
+
   // ------------------------------------------------------------
   // v0.5.0-beta.12: init-context removal + jsonl seeding on task create
   // ------------------------------------------------------------
@@ -3295,6 +3345,12 @@ print(len(entries))
     );
     expect(match).toBeTruthy();
     const body = match?.[1] ?? "";
+    expect(body).toMatch(/Grill Gate/);
+    expect(body).toMatch(/skip grill, because/);
+    expect(body).toMatch(/evidence proves/);
+    expect(body).toMatch(/Architecture Shaping/);
+    expect(body).toMatch(/research\/architecture-shaping\.md/);
+    expect(body).toMatch(/toy-MVP implementation/);
     expect(body).toMatch(/Lightweight: `prd\.md` can be enough/);
     expect(body).toMatch(/Complex: finish `prd\.md`, `design\.md`, and `implement\.md`/);
     expect(body).toMatch(/implement\.jsonl|check\.jsonl/);
@@ -5028,6 +5084,15 @@ describe("regression: class-2 platforms use pull-based sub-agent context", () =>
           const content = fs.readFileSync(path.join(tmpDir, file), "utf-8");
           expect(content).toContain("Required: Load Trellis Context First");
           expect(content).toContain("task.py current --source");
+          expect(content).toContain("Human-readable artifact language");
+          expect(content).toContain("use Chinese by default");
+          expect(content).toContain("English technical terms");
+          expect(content).toContain(
+            "Do not localize machine-readable artifacts",
+          );
+          expect(content).toContain("task.json");
+          expect(content).toContain("implement.jsonl");
+          expect(content).toContain("check.jsonl");
         }
       });
 

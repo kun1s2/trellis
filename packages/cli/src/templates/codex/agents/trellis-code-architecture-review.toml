@@ -20,7 +20,8 @@ This Codex gate is pull-based. Before reviewing:
 2. Read `<task-path>/check.jsonl`, skipping rows without a `"file"` field.
 3. Read every referenced file from `check.jsonl`.
 4. Read `<task-path>/prd.md`, then `design.md` if present, then `implement.md` if present.
-5. If `check.jsonl` is missing or only contains seed rows, choose the relevant `.trellis/spec/` files yourself based on changed files and task scope. Do not approve without reading task artifacts.
+5. If the task artifacts record `Architecture Shaping: required`, or reference `research/architecture-shaping.md`, read that research artifact before reviewing.
+6. If `check.jsonl` is missing or only contains seed rows, choose the relevant `.trellis/spec/` files yourself based on changed files and task scope. Do not approve without reading task artifacts.
 
 ---
 
@@ -30,8 +31,9 @@ Before reviewing, check whether the task artifacts recorded a development strate
 
 - If the strategy is TDD, align review expectations to `trellis-tdd`.
 - If a review-gate order is recorded, verify spec-review and code-review have passed before this gate.
-- If `implement.md` records architecture review guidance or deep-review, check the architecture skill output before approving.
+- If `design.md` / `implement.md` records architecture-shaping guidance or deep-review, check the architecture skill output before approving.
 - Do not approve the architecture-review gate if complex task artifacts are missing the required strategy record or review-gate order.
+- Do not approve if a complex architecture-sensitive task is missing an architecture-shaping trigger decision, unless the task artifacts record a low-risk skip reason.
 
 ## Core Responsibilities
 
@@ -44,8 +46,20 @@ Before reviewing, check whether the task artifacts recorded a development strate
 
 - Changes stay within task scope and do not introduce unrelated architecture churn.
 - Abstractions are justified by current requirements, not hypothetical flexibility.
+- Necessary structure is preserved: a small MVP may reduce scope, but it must not collapse durable domain behavior into a toy one-file implementation when task artifacts require production-shaped boundaries.
 - Boundaries between files, modules, and layers remain direct and understandable.
 - Naming, structure, and review-gate sequencing remain coherent with the task artifacts.
+- Accepted architecture constraints referenced by `design.md` or `implement.md` are followed, or the planning artifact was explicitly revised with evidence.
+
+## Blocking Versus Warning Standard
+
+Block only inside the current task scope and only with artifact-backed or changed-code evidence. Blocking findings include:
+
+- Violation of accepted architecture constraints referenced by `design.md` or `implement.md`.
+- Mixed responsibilities, a second source of truth, hidden fallback behavior, or untestable core behavior introduced by the task.
+- A single file or module carrying multiple long-lived change axes for the task's domain behavior.
+
+Warnings or follow-up candidates are appropriate for adjustable recommendations, task-external legacy debt, or shallow areas explicitly accepted in `research/architecture-shaping.md` or `design.md`.
 
 ## Verification
 

@@ -1,0 +1,7 @@
+{"file":".trellis/tasks/06-04-architecture-shaping-workflow/prd.md","reason":"Verify accepted scope and anti-toy-MVP requirements."}
+{"file":".trellis/tasks/06-04-architecture-shaping-workflow/design.md","reason":"Verify proposed Trellis-native architecture shaping design."}
+{"file":".trellis/tasks/06-04-architecture-shaping-workflow/implement.md","reason":"Verify implementation order and validation coverage."}
+{"file":"packages/cli/src/templates/trellis/workflow.md","reason":"Check workflow routing and state block changes."}
+{"file":"packages/cli/src/templates/common/index.ts","reason":"Check bundled skill discovery remains intact."}
+{"file":"packages/cli/src/configurators/shared.ts","reason":"Check init/update bundled skill output path."}
+{"file":"packages/cli/src/templates/codex/agents/trellis-code-architecture-review.toml","reason":"Check architecture review gate contract updates."}

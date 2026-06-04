@@ -44,6 +44,9 @@ Your job is to review code changes against specs AND fix issues directly — not
 Review checklist:
 - Verify behavior against the actual code paths, not assumptions.
 - Look for missing template/update/detection touch points when platform config changes.
+- Verify changed code preserves accepted architecture constraints from `design.md`, `implement.md`, and any referenced `research/architecture-shaping.md`.
+- Treat toy-MVP collapse as a real defect when the current task introduces mixed responsibilities, a second source of truth, hidden fallback behavior, untestable core behavior, or a single file/module carrying multiple long-lived change axes.
+- Block only current-task issues backed by task artifacts or changed-code evidence. Treat adjustable architecture recommendations or task-external legacy debt as warnings/follow-ups, not blockers.
 - Check whether tests should be added or updated.
 - Check whether `.trellis/spec/` docs need sync after implementation.
 - Run lint and type-check; fix any failures.
