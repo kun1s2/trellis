@@ -1,0 +1,28 @@
+{
+  "id": "audit-trellis-workflows-optimization",
+  "name": "audit-trellis-workflows-optimization",
+  "title": "Audit Trellis workflows and optimization opportunities",
+  "description": "",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "codex",
+  "assignee": "codex",
+  "createdAt": "2026-06-05",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "06-05-trellis-p0-workflow-hardening-goal"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

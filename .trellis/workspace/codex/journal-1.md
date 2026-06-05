@@ -212,3 +212,36 @@ Aligned Codex sub-agent workflow semantics with inline path, clarified Goal/Gril
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: Harden Trellis planning and goal validation
+
+**Date**: 2026-06-05
+**Task**: Harden Trellis planning and goal validation
+**Branch**: `main`
+
+### Summary
+
+Implemented P0 Trellis workflow hardening: added script-level planning readiness validation, Goal Contract validation, mark-goal pre-write validation, task validation flags, template/local mirrors, specs, tests, and preserved the default native goal token_budget of 1000000. Verified with Trellis goal validation, py_compile, targeted tests, full psymoth test, lint, typecheck, and lint:py.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `70c19aaa` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

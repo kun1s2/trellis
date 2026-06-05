@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/cli/backend/index.md", "reason": "CLI backend spec index for workflow/config/update implementation scope."}
+{"file": ".trellis/spec/cli/backend/workflow-state-contract.md", "reason": "Runtime breadcrumb source-of-truth, status writer, and required-step invariants."}
+{"file": ".trellis/spec/cli/backend/commands-update.md", "reason": "Config section append and whole-file workflow update contract."}
+{"file": ".trellis/spec/cli/backend/commands-workflow.md", "reason": "workflow.md template ownership and runtime parser compatibility contract."}
+{"file": ".trellis/spec/cli/backend/platform-integration.md", "reason": "Codex/platform template and hook integration boundaries."}
+{"file": ".trellis/spec/cli/backend/quality-guidelines.md", "reason": "Routing and writer-audit quality rules for structural workflow changes."}
+{"file": ".trellis/spec/cli/unit-test/conventions.md", "reason": "Test conventions for regression and integration coverage."}
+{"file": ".trellis/tasks/06-05-trellis-workflow-step-toggles/research/architecture-shaping.md", "reason": "Accepted architecture constraints and toggle boundary analysis."}

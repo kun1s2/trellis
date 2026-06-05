@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/cli/backend/index.md", "reason": "CLI backend spec index for checking changed workflow/config/update surfaces."}
+{"file": ".trellis/spec/cli/backend/workflow-state-contract.md", "reason": "Check breadcrumb, status writer, and required-step invariants are preserved."}
+{"file": ".trellis/spec/cli/backend/commands-update.md", "reason": "Check update/config section behavior remains idempotent and safe."}
+{"file": ".trellis/spec/cli/backend/commands-workflow.md", "reason": "Check workflow.md ownership and parser compatibility are preserved."}
+{"file": ".trellis/spec/cli/backend/platform-integration.md", "reason": "Check Codex/platform integration boundaries and template collection stay aligned."}
+{"file": ".trellis/spec/cli/backend/quality-guidelines.md", "reason": "Check structural routing and writer-audit risks."}
+{"file": ".trellis/spec/cli/unit-test/conventions.md", "reason": "Check tests cover real behavior instead of tautological paths."}
+{"file": ".trellis/tasks/06-05-trellis-workflow-step-toggles/research/architecture-shaping.md", "reason": "Check implementation preserves accepted architecture constraints."}
