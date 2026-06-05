@@ -621,6 +621,13 @@ export function injectPullBasedPreludeToml(
   agentType: SubAgentType,
 ): string {
   const prelude = buildPullBasedPrelude(agentType);
+  const recursionGuardRe =
+    /(CRITICAL — Recursion guard \(read first\):[\s\S]*?- Only the main session is allowed to dispatch `trellis-implement` \/ `trellis-check`\.[^\r\n]*(?:\r?\n){2})/;
+
+  if (recursionGuardRe.test(content)) {
+    return content.replace(recursionGuardRe, `$1${prelude}`);
+  }
+
   // Match: developer_instructions = """  followed by newline
   const re = /(developer_instructions\s*=\s*""")(\r?\n)/;
   if (!re.test(content)) {

@@ -82,7 +82,7 @@ These return `ResolvedTemplate[]` (`{ name, content }`) and are the canonical en
 
 `configurators/shared.ts:injectPullBasedPreludeMarkdown` — inserts the prelude after a markdown agent's YAML frontmatter, or prepends it if there's no frontmatter.
 
-`configurators/shared.ts:injectPullBasedPreludeToml` — inserts the prelude inside Codex's `developer_instructions = """` block. No-op if the regex doesn't match (defensive — Codex agents always have `developer_instructions`, but if a future agent skips it, the prelude is simply omitted rather than corrupting TOML).
+`configurators/shared.ts:injectPullBasedPreludeToml` — inserts the prelude inside Codex's `developer_instructions = """` block, preferring the position immediately after the Codex recursion guard so `CRITICAL — Recursion guard (read first)` remains the first operational instruction. No-op if the regex doesn't match (defensive — Codex agents always have `developer_instructions`, but if a future agent skips it, the prelude is simply omitted rather than corrupting TOML).
 
 `configurators/shared.ts:applyPullBasedPreludeMarkdown` — apply over a list of `AgentContent`. Convenience wrapper used by class-2 markdown configurators; agents whose `name` doesn't resolve to `implement`/`check` pass through unchanged.
 
@@ -133,6 +133,7 @@ Configurators must respect these. They are not enforced by types; tests in `test
 - **`.agents/skills/` writes use `resolvePlaceholdersNeutral`.** See `platform-integration.md` "Rule: `.agents/skills/` writes use `resolvePlaceholdersNeutral()`". Per-platform skill roots (`.claude/skills/`, `.qoder/skills/`, etc.) keep using `resolvePlaceholders`.
 - **Class-2 agent definitions carry the pull-based prelude.** `applyPullBasedPreludeMarkdown` / `applyPullBasedPreludeToml` must run on every class-2 platform's `trellis-implement` and `trellis-check` definitions (research is intentionally exempt).
 - **Pull-based prelude wording is the same on every class-2 platform.** They all call `buildPullBasedPrelude`. A platform that hand-rolls its own prelude breaks the cross-platform contract documented in `platform-integration.md` "Active task discovery on class-2 platforms".
+- **Raw class-2 agent templates do not embed the prelude.** Keep `trellis-implement` / `trellis-check` source templates free of a hand-written `Required: Load Trellis Context First` block; the configurator injects exactly one prelude in both init and update collection paths. Codex TOML agents also keep the recursion guard before the injected prelude.
 - **`start.md` is filtered for agent-capable platforms.** `filterCommands` is private; `resolveCommands` / `resolveAllAsSkills` / `resolveAllAsSkillsNeutral` apply it. Configurators must not bypass these and call `getCommandTemplates()` directly — that re-introduces `start` on platforms that don't need it.
 - **Skill / command descriptions live in `SKILL_DESCRIPTIONS` / `COMMAND_DESCRIPTIONS`.** Adding a workflow skill or palette command requires adding the description here; the wrapper helpers throw at init if the description is missing.
 - **Bundled skills already own frontmatter.** `wrapWithSkillFrontmatter` must not be applied to `resolveBundledSkills` output. `writeSkills` and `collectSkillTemplates` accept bundled files separately for this reason.

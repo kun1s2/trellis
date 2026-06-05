@@ -7,7 +7,10 @@ import {
   getAllCodexSkills,
   getConfigTemplate,
 } from "../../src/templates/codex/index.js";
-import { resolveAllAsSkills } from "../../src/configurators/shared.js";
+import {
+  applyPullBasedPreludeToml,
+  resolveAllAsSkills,
+} from "../../src/configurators/shared.js";
 import { AI_TOOLS } from "../../src/types/ai-tools.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -131,6 +134,10 @@ describe("codex architecture shaping prompts", () => {
     expect(content).toContain("research/architecture-shaping.md");
     expect(content).toContain("Small MVP scope is fine; toy architecture is not");
     expect(content).toContain("Avoid speculative abstractions");
+    expect(content).toContain("Goal Mode ownership stays with the main session");
+    expect(content).toContain("do not call `create_goal` / `update_goal`");
+    expect(content).toContain("Grill Gate ownership stays with planning");
+    expect(content).toContain("Do not invent user-authority Grill decisions");
   });
 
   it("trellis-check distinguishes architecture blockers from warnings", () => {
@@ -146,6 +153,10 @@ describe("codex architecture shaping prompts", () => {
     expect(content).toContain("toy-MVP collapse");
     expect(content).toContain("Block only current-task issues");
     expect(content).toContain("task-external legacy debt");
+    expect(content).toContain("Goal Mode ownership stays with the main session");
+    expect(content).toContain("do not call `create_goal` / `update_goal`");
+    expect(content).toContain("Grill Gate ownership stays with planning");
+    expect(content).toContain("Do not run Phase 3.4 commit");
   });
 
   it("trellis-code-architecture-review reads shaping output and blocks toy MVP failures", () => {
@@ -162,6 +173,31 @@ describe("codex architecture shaping prompts", () => {
     expect(content).toContain("toy one-file implementation");
     expect(content).toContain("Blocking Versus Warning Standard");
     expect(content).toContain("single file or module carrying multiple long-lived change axes");
+  });
+});
+
+describe("codex pull-based prelude injection", () => {
+  it("keeps agent source free of embedded prelude and injects it exactly once", () => {
+    const rawAgents = getAllAgents().filter((agent) =>
+      ["trellis-implement", "trellis-check"].includes(agent.name),
+    );
+    const renderedAgents = applyPullBasedPreludeToml(rawAgents);
+
+    for (const agent of rawAgents) {
+      expect(agent.content).not.toContain("Required: Load Trellis Context First");
+    }
+
+    for (const agent of renderedAgents) {
+      const occurrences = agent.content.match(
+        /Required: Load Trellis Context First/g,
+      );
+      expect(occurrences).toHaveLength(1);
+      expect(agent.content.indexOf("CRITICAL — Recursion guard")).toBeLessThan(
+        agent.content.indexOf("Required: Load Trellis Context First"),
+      );
+      expect(agent.content).toContain("Human-readable artifact language");
+      expect(agent.content).toContain("use Chinese by default");
+    }
   });
 });
 

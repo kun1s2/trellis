@@ -8,7 +8,8 @@
 2. **Specs injected, not remembered** — guidelines are injected via hook/skill, not recalled from memory
 3. **Persist everything** — research, decisions, and lessons all go to files; conversations get compacted, files don't
 4. **Incremental development** — one task at a time
-5. **Capture learnings** — after each task, review and write new knowledge back to spec
+5. **Production-shaped MVPs** — Trellis-created projects are long-lived by default; reduce scope when needed, but do not collapse maintainable structure into a toy one-file implementation
+6. **Capture learnings** — after each task, review and write new knowledge back to spec
 
 ---
 
@@ -163,6 +164,15 @@ Phase 3: Finish  → verify, update spec, commit, and wrap up
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 - Lightweight tasks may be PRD-only. Complex tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`.
 
+### Architecture Shaping Decision
+
+Before complex planning can be marked ready, record an architecture-shaping trigger decision in `design.md` for complex tasks or `prd.md` for PRD-only tasks. The decision is one of:
+
+- `Architecture Shaping: required; see research/architecture-shaping.md.` — the task creates modules, changes cross-layer contracts, introduces durable domain behavior, affects testability, or risks toy-MVP implementation.
+- `Architecture Shaping: skipped, because ...` — the task is local, mechanical, low-risk, and the low-risk reason is backed by task or repository evidence.
+
+When shaping is required, run `trellis-architecture-shaping`, write or reference `research/architecture-shaping.md`, and add that file to `implement.jsonl` / `check.jsonl` when sub-agents or review gates need it. Only accepted constraints referenced by `design.md` or `implement.md` bind later agents; adjustable recommendations stay advisory.
+
 ### Grill Gate
 
 Before planning can be marked ready, record a Grill Gate decision in `prd.md` for lightweight tasks or `implement.md` for complex tasks. The decision is one of:
@@ -203,6 +213,7 @@ Complex task: ask the user if you can create a Trellis task and enter the planni
 [workflow-state:planning]
 If this task was initialized or converted by `trellis-goal`, load `trellis-goal` and follow `prd.md` Goal Contract plus `implement.md` checkpoints; bridge or continue through Codex native goal state instead of running a local Trellis execution loop.
 Otherwise, load `trellis-brainstorm`; stay in planning and make an explicit Grill Gate decision before start.
+Architecture Shaping: record `Architecture Shaping: required; see research/architecture-shaping.md.` or `Architecture Shaping: skipped, because ...` before `task.py start` for complex tasks. Use `trellis-architecture-shaping` when the task creates modules, changes contracts, affects testability, introduces durable domain behavior, or risks toy-MVP implementation.
 Grill Gate: record `trellis-grill-me required`, `trellis-grill-agents required`, or `skip grill, because ...` in the task artifacts. The AI may skip only when evidence proves the task is mechanical, low-risk, and acceptance is explicit.
 Use `trellis-grill-me` when real user product, scope, preference, UX, compatibility, security, or data-integrity decisions remain. Use `trellis-grill-agents` only when the user explicitly authorized unattended/proxy answers; if it surfaces a real user decision, stop and route back to the user.
 Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
@@ -219,6 +230,7 @@ Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research mani
 [workflow-state:planning-inline]
 If this task was initialized or converted by `trellis-goal`, load `trellis-goal` and follow `prd.md` Goal Contract plus `implement.md` checkpoints; bridge or continue through Codex native goal state instead of running a local Trellis execution loop.
 Otherwise, load `trellis-brainstorm`; stay in planning and make an explicit Grill Gate decision before start.
+Architecture Shaping: record `Architecture Shaping: required; see research/architecture-shaping.md.` or `Architecture Shaping: skipped, because ...` before `task.py start` for complex tasks. Use `trellis-architecture-shaping` when the task creates modules, changes contracts, affects testability, introduces durable domain behavior, or risks toy-MVP implementation.
 Grill Gate: record `trellis-grill-me required`, `trellis-grill-agents required`, or `skip grill, because ...` in the task artifacts. The AI may skip only when evidence proves the task is mechanical, low-risk, and acceptance is explicit.
 Use `trellis-grill-me` when real user product, scope, preference, UX, compatibility, security, or data-integrity decisions remain. Use `trellis-grill-agents` only when the user explicitly authorized unattended/proxy answers; if it surfaces a real user decision, stop and route back to the user.
 Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
@@ -241,6 +253,7 @@ Sub-agent dispatch protocol applies to all platforms and all sub-agents, includi
 
 [workflow-state:in_progress]
 Goal execution override: if the active task's `prd.md` contains `## Goal Contract` or Goal Contract Collision output from `trellis-goal`, load `trellis-goal` first. Inspect Codex native goal state when available, continue only active native goals, and use `implement.md` checkpoints as evidence/recovery landmarks rather than a local queue or run-to-completion loop.
+Active goal behavior: while the Goal Contract objective and Frozen Invariants remain unchanged, do not fall back to the ordinary task clarification loop. Continue autonomously through approved research, `trellis-grill-agents` for medium ambiguity, delegated decisions, verification, and Evidence Chain updates. High-risk, scope-changing, credential/production/legal/destructive, or user-owned boundaries must Stop/Block with a Trellis artifact record before any native `update_goal(blocked)` action.
 Tools: `trellis-implement` / `trellis-research` are sub-agent types only (Task/Agent tool, NOT Skill; there is no skill by these names). `trellis-update-spec` is a skill. `trellis-check` exists as both; prefer the Agent form when verifying after code changes.
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> `/trellis:finish-work`.
 Main-session default: dispatch implement/check sub-agents. Sub-agent self-exemption: if already running as `trellis-implement`, do NOT spawn another `trellis-implement` or `trellis-check`; if already running as `trellis-check`, do NOT spawn another `trellis-check` or `trellis-implement`. Dispatch is main session only.
@@ -254,6 +267,7 @@ Dispatch prompt starts with `Active task: <task path from task.py current>`. Rea
 
 [workflow-state:in_progress-inline]
 Goal execution override: if the active task's `prd.md` contains `## Goal Contract` or Goal Contract Collision output from `trellis-goal`, load `trellis-goal` first. Inspect Codex native goal state when available, continue only active native goals, and use `implement.md` checkpoints as evidence/recovery landmarks rather than a local queue or run-to-completion loop.
+Active goal behavior: while the Goal Contract objective and Frozen Invariants remain unchanged, do not fall back to the ordinary task clarification loop. Continue autonomously through approved research, `trellis-grill-agents` for medium ambiguity, delegated decisions, verification, and Evidence Chain updates. High-risk, scope-changing, credential/production/legal/destructive, or user-owned boundaries must Stop/Block with a Trellis artifact record before any native `update_goal(blocked)` action.
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> `/trellis:finish-work`.
 Do not dispatch implement/check sub-agents in inline mode.
 Read context: `prd.md` -> `design.md if present` -> `implement.md if present`, plus relevant spec/research loaded by skills.
@@ -294,6 +308,7 @@ When a user request matches one of these intents inside an active task, route fi
 
 - Planning or unclear requirements -> `trellis-brainstorm`.
 - `/goal`, Codex native Goal Mode, explicit unattended/long-running autonomous execution, or Goal Contract drafting/conversion -> `trellis-goal`.
+- Architecture-sensitive planning, module boundaries, testability, architecture improvement/refactoring opportunities, large/long-lived project structure, or anti-toy-MVP concerns -> `trellis-architecture-shaping`.
 - Requirement/design pressure-testing with the user participating -> `trellis-grill-me`; explicitly authorized unattended/proxy artifact grilling -> `trellis-grill-agents`.
 - `in_progress` implementation/check -> dispatch `trellis-implement` / `trellis-check`.
 - Repeated debugging -> `trellis-break-loop`; spec updates -> `trellis-update-spec`.
@@ -304,6 +319,7 @@ When a user request matches one of these intents inside an active task, route fi
 
 - Planning or unclear requirements -> `trellis-brainstorm`.
 - `/goal`, Codex native Goal Mode, explicit unattended/long-running autonomous execution, or Goal Contract drafting/conversion -> `trellis-goal`.
+- Architecture-sensitive planning, module boundaries, testability, architecture improvement/refactoring opportunities, large/long-lived project structure, or anti-toy-MVP concerns -> `trellis-architecture-shaping`.
 - Requirement/design pressure-testing with the user participating -> `trellis-grill-me`; explicitly authorized unattended/proxy artifact grilling -> `trellis-grill-agents`.
 - Before editing -> `trellis-before-dev`; after editing -> `trellis-check`.
 - Repeated debugging -> `trellis-break-loop`; spec updates -> `trellis-update-spec`.
@@ -361,6 +377,7 @@ The brainstorm skill will guide you to:
 - Split large scopes into a parent task plus child tasks when the deliverables can be verified independently
 - Keep `prd.md` focused on requirements and acceptance criteria
 - For complex tasks, produce `design.md` and `implement.md` before implementation starts
+- Record the architecture-shaping trigger decision; run `trellis-architecture-shaping` and reference `research/architecture-shaping.md` when required
 - Make and record the Grill Gate decision before planning is declared ready
 
 When considering a parent/child split:
@@ -394,6 +411,7 @@ Do the research in the main session directly and write findings into `{TASK_DIR}
 
 **Research artifact conventions**:
 - One file per research topic (e.g. `research/auth-library-comparison.md`)
+- Use `research/architecture-shaping.md` for architecture-sensitive planning output from `trellis-architecture-shaping`
 - Record third-party library usage examples, API references, version constraints in files
 - Note relevant spec file paths you discovered for later reference
 
@@ -462,7 +480,7 @@ After artifact review, flip the task status to `in_progress`:
 python3 ./.trellis/scripts/task.py start <task-dir>
 ```
 
-For lightweight tasks, `prd.md` can be enough. For complex tasks, `prd.md`, `design.md`, and `implement.md` must exist and be reviewed before start. A recorded Grill Gate decision is required in all cases. On sub-agent-capable platforms, curate jsonl manifests when extra spec or research context is needed; seed-only manifests are tolerated by consumers.
+For lightweight tasks, `prd.md` can be enough. For complex tasks, `prd.md`, `design.md`, and `implement.md` must exist and be reviewed before start. A recorded architecture-shaping trigger decision is required for complex tasks, and a recorded Grill Gate decision is required in all cases. On sub-agent-capable platforms, curate jsonl manifests when extra spec or research context is needed; seed-only manifests are tolerated by consumers.
 
 After this command succeeds, the breadcrumb auto-switches to `[workflow-state:in_progress]`, and the rest of Phase 2 / 3 follows.
 
@@ -473,6 +491,7 @@ If `task.py start` errors with a session-identity message (no context key from h
 | Condition | Required |
 |------|:---:|
 | `prd.md` exists | ✅ |
+| Complex task records `Architecture Shaping: required; see research/architecture-shaping.md.` or `Architecture Shaping: skipped, because ...` | ✅ |
 | Grill Gate result is recorded in `prd.md` or `implement.md` | ✅ |
 | User confirms task should enter implementation | ✅ |
 | `task.py start` has been run (status = in_progress) | ✅ |
