@@ -1415,6 +1415,41 @@ describe("regression: current-task path normalization", () => {
     expect(after.status).toBe("in_progress");
   });
 
+  it("[planning-gates] task.py start blocks complex planning tasks missing required artifacts", () => {
+    setupTaskRepo();
+    const taskJsonPath = path.join(
+      tmpDir,
+      ".trellis",
+      "tasks",
+      "issue-106",
+      "task.json",
+    );
+    const taskJson = JSON.parse(fs.readFileSync(taskJsonPath, "utf-8"));
+    taskJson.status = "planning";
+    fs.writeFileSync(taskJsonPath, JSON.stringify(taskJson, null, 2), "utf-8");
+    writeProjectFile(
+      path.join(".trellis", "tasks", "issue-106", "prd.md"),
+      "# PRD\n\nThis complex task needs Architecture Shaping and a Grill Gate.\n",
+    );
+
+    const taskScriptPath = path.join(tmpDir, ".trellis", "scripts", "task.py");
+    const result = spawnSync(
+      pythonCmd,
+      [taskScriptPath, "start", path.join(".trellis", "tasks", "issue-106")],
+      { cwd: tmpDir, encoding: "utf-8", env: sessionEnv() },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("planning gate validation failed");
+    expect(result.stdout).toContain("Complex planning task is missing design.md");
+    expect(result.stdout).toContain("Complex planning task is missing implement.md");
+    expect(result.stdout).toContain("Missing Architecture Shaping decision");
+    expect(result.stdout).toContain("Missing Grill Gate decision");
+
+    const after = JSON.parse(fs.readFileSync(taskJsonPath, "utf-8"));
+    expect(after.status).toBe("planning");
+  });
+
   it("[session-current-task] task.py start writes session runtime state when TRELLIS_CONTEXT_ID is set", () => {
     setupTaskRepo();
     const taskScriptPath = path.join(tmpDir, ".trellis", "scripts", "task.py");

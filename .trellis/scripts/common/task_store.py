@@ -6,6 +6,8 @@ Provides:
     ensure_tasks_dir   - Ensure tasks directory exists
     cmd_create         - Create a new task
     cmd_archive        - Archive completed task
+    cmd_mark_goal      - Mark a task as a Trellis goal
+    cmd_goal_info      - Show Trellis goal metadata and checkpoint summary
     cmd_set_branch     - Set git branch for task
     cmd_set_base_branch - Set PR target branch
     cmd_set_scope      - Set scope for PR title
@@ -47,12 +49,19 @@ from .safe_commit import (
     safe_archive_paths_to_add,
     safe_git_add,
 )
+from .tasks import (
+    describe_task_hierarchy,
+    find_archived_task_by_dir_name,
+    iter_active_tasks,
+    load_task,
+)
 from .task_utils import (
     archive_task_complete,
     find_task_by_name,
     resolve_task_dir,
     run_task_hooks,
 )
+from .task_validation import validate_goal_contract
 
 
 # =============================================================================
@@ -81,22 +90,6 @@ def ensure_tasks_dir(repo_root: Path) -> Path:
         archive_dir.mkdir(parents=True)
 
     return tasks_dir
-
-
-def _find_archived_task_by_dir_name(tasks_dir: Path, dir_name: str) -> Path | None:
-    """Find an archived task directory with the exact active-task dir name."""
-    archive_dir = tasks_dir / DIR_ARCHIVE
-    if not archive_dir.is_dir():
-        return None
-
-    for month_dir in sorted(archive_dir.iterdir()):
-        if not month_dir.is_dir():
-            continue
-        candidate = month_dir / dir_name
-        if candidate.is_dir():
-            return candidate
-
-    return None
 
 
 def _repo_relative_path(path: Path, repo_root: Path) -> str:
@@ -133,9 +126,11 @@ _SUBAGENT_CONFIG_DIRS: tuple[str, ...] = (
 _SEED_EXAMPLE = (
     "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. "
     "Put spec/research files only — no code paths. "
-    "Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. "
+    "Run `python .trellis/scripts/get_context.py --mode packages` to list available specs. "
     "Delete this line once real entries are added."
 )
+
+_GOAL_METADATA_VERSION = 1
 
 
 def _has_subagent_platform(repo_root: Path) -> bool:
@@ -188,6 +183,214 @@ def _default_prd_content(title: str, description: str | None = None) -> str:
 - Complex `task` 在 `task.py start` 前补充 `design.md`（technical design）和 `implement.md`（execution planning）。
 - 人类阅读材料默认使用中文表达；`PRD`、`task`、`workflow`、`Grill Gate`、`sub-agent`、`quality gate` 等 technical terms 保留英文。
 """
+
+
+# =============================================================================
+# Trellis Goal Metadata
+# =============================================================================
+
+def _iso_now() -> str:
+    """Return a timezone-aware ISO timestamp without microseconds."""
+    return datetime.now().astimezone().replace(microsecond=0).isoformat()
+
+
+def _read_task_json_for_command(task_input: str, repo_root: Path) -> tuple[Path, dict] | None:
+    """Resolve a task and load task.json for commands that mutate or report it."""
+    task_dir = resolve_task_dir(task_input, repo_root)
+    task_json_path = task_dir / FILE_TASK_JSON
+    if not task_dir.is_dir() or not task_json_path.is_file():
+        print(colored(f"Error: Task not found: {task_input}", Colors.RED), file=sys.stderr)
+        return None
+
+    data = read_json(task_json_path)
+    if data is None:
+        print(colored(f"Error: Failed to read task.json: {task_json_path}", Colors.RED), file=sys.stderr)
+        return None
+
+    return task_dir, data
+
+
+def _goal_metadata(data: dict) -> dict | None:
+    """Return existing Trellis goal metadata when present and valid."""
+    meta = data.get("meta")
+    if not isinstance(meta, dict):
+        return None
+    trellis_goal = meta.get("trellis_goal")
+    if not isinstance(trellis_goal, dict):
+        return None
+    return trellis_goal
+
+
+def _print_goal_hierarchy(task_dir: Path, repo_root: Path) -> None:
+    """Print parent/child task context for goal-info."""
+    task = load_task(task_dir)
+    if task is None:
+        return
+
+    tasks_dir = get_tasks_dir(repo_root)
+    all_tasks = {t.dir_name: t for t in iter_active_tasks(tasks_dir)}
+    hierarchy = describe_task_hierarchy(task, all_tasks, tasks_dir)
+
+    print("Hierarchy:")
+    print(f"  Parent: {hierarchy.parent or '-'}")
+
+    if hierarchy.total_count == 0:
+        print("  Children: 0")
+    else:
+        print(f"  Children: {hierarchy.total_count} [{hierarchy.done_count}/{hierarchy.total_count} done]")
+        for child in hierarchy.children:
+            goal_tag = " [goal]" if child.is_goal else ""
+            archive_tag = " [archived]" if child.is_archived else ""
+            active_tag = "" if child.is_active or child.is_archived else " [missing]"
+            assignee = child.assignee or "-"
+            parent = child.parent or "-"
+            print(
+                "    - "
+                f"{child.dir_name}/ ({child.status}){goal_tag}{archive_tag}{active_tag} "
+                f"[{assignee}] parent={parent}"
+            )
+
+    if hierarchy.warnings:
+        print("  Warnings:")
+        for warning in hierarchy.warnings:
+            print(f"    - {warning}")
+
+
+def _parse_goal_checkpoints(implement_path: Path) -> tuple[int, dict[str, int], str | None]:
+    """Parse implement.md checkpoint headings and status lines."""
+    counts: dict[str, int] = {
+        "pending": 0,
+        "in_progress": 0,
+        "blocked": 0,
+        "done": 0,
+        "unknown": 0,
+    }
+    if not implement_path.is_file():
+        return 0, counts, None
+
+    checkpoints: list[tuple[str, str]] = []
+    current_title: str | None = None
+    current_status: str | None = None
+
+    for line in implement_path.read_text(encoding="utf-8").splitlines():
+        heading = re.match(r"^###\s+(Checkpoint\s+\d+:.+)$", line)
+        if heading:
+            if current_title is not None:
+                checkpoints.append((current_title, current_status or "unknown"))
+            current_title = heading.group(1).strip()
+            current_status = None
+            continue
+
+        status = re.match(r"^\s*-\s*Status:\s*([A-Za-z0-9_-]+)\s*$", line)
+        if current_title is not None and status:
+            current_status = status.group(1).strip()
+
+    if current_title is not None:
+        checkpoints.append((current_title, current_status or "unknown"))
+
+    next_checkpoint: str | None = None
+    for title, status in checkpoints:
+        counts[status] = counts.get(status, 0) + 1
+        if next_checkpoint is None and status != "done":
+            next_checkpoint = f"{title} ({status})"
+
+    return len(checkpoints), counts, next_checkpoint
+
+
+def cmd_mark_goal(args: argparse.Namespace) -> int:
+    """Mark a task as a Trellis goal."""
+    repo_root = get_repo_root()
+    loaded = _read_task_json_for_command(args.dir, repo_root)
+    if loaded is None:
+        return 1
+
+    task_dir, data = loaded
+    meta = data.get("meta")
+    if meta is None:
+        meta = {}
+        data["meta"] = meta
+    if not isinstance(meta, dict):
+        print(colored("Error: task.json meta must be an object", Colors.RED), file=sys.stderr)
+        return 1
+
+    existing = meta.get("trellis_goal")
+    if existing is not None and not isinstance(existing, dict):
+        print(colored("Error: task.json meta.trellis_goal must be an object", Colors.RED), file=sys.stderr)
+        return 1
+
+    now = _iso_now()
+    current_status = str(data.get("status") or "unknown")
+    prior = existing if isinstance(existing, dict) else {}
+    trellis_goal = {
+        "enabled": True,
+        "version": _GOAL_METADATA_VERSION,
+        "cadence": args.cadence,
+        "source": args.source,
+        "converted_from_status": prior.get("converted_from_status") or current_status,
+        "converted_at": prior.get("converted_at") or now,
+        "updated_at": now,
+    }
+    meta["trellis_goal"] = trellis_goal
+
+    report = validate_goal_contract(task_dir, repo_root, data)
+    if report.errors:
+        print(colored("Error: Goal Contract validation failed", Colors.RED), file=sys.stderr)
+        for issue in report.issues:
+            color = Colors.RED if issue.severity == "error" else Colors.YELLOW
+            label = "ERROR" if issue.severity == "error" else "WARN"
+            print(colored(f"  {label}: {issue.message}", color), file=sys.stderr)
+        print("Run `task.py validate <dir> --goal` for the full Goal Contract report.", file=sys.stderr)
+        return 1
+    if report.warnings:
+        print(colored("Goal Contract warnings:", Colors.YELLOW), file=sys.stderr)
+        for issue in report.warnings:
+            print(colored(f"  WARN: {issue.message}", Colors.YELLOW), file=sys.stderr)
+
+    task_json_path = task_dir / FILE_TASK_JSON
+    if not write_json(task_json_path, data):
+        print(colored(f"Error: Failed to write task.json: {task_json_path}", Colors.RED), file=sys.stderr)
+        return 1
+
+    print(colored(f"Marked Trellis goal: {task_dir.name}", Colors.GREEN))
+    print(f"Cadence: {args.cadence}")
+    print(f"Source: {args.source}")
+    print(f"Converted from status: {trellis_goal['converted_from_status']}")
+    return 0
+
+
+def cmd_goal_info(args: argparse.Namespace) -> int:
+    """Show Trellis goal metadata and checkpoint summary."""
+    repo_root = get_repo_root()
+    loaded = _read_task_json_for_command(args.dir, repo_root)
+    if loaded is None:
+        return 1
+
+    task_dir, data = loaded
+    goal = _goal_metadata(data)
+    relative_task = _repo_relative_path(task_dir, repo_root)
+
+    print(f"Task: {relative_task}")
+    print("Trellis Goal:")
+    if not goal or goal.get("enabled") is not True:
+        print("  Enabled: false")
+    else:
+        print("  Enabled: true")
+        print(f"  Version: {goal.get('version', '-')}")
+        print(f"  Cadence: {goal.get('cadence', '-')}")
+        print(f"  Source: {goal.get('source', '-')}")
+        print(f"  Converted From Status: {goal.get('converted_from_status', '-')}")
+        print(f"  Converted At: {goal.get('converted_at', '-')}")
+        print(f"  Updated At: {goal.get('updated_at', '-')}")
+
+    _print_goal_hierarchy(task_dir, repo_root)
+
+    total, counts, next_checkpoint = _parse_goal_checkpoints(task_dir / "implement.md")
+    print("Checkpoints:")
+    print(f"  Total: {total}")
+    for status in sorted(counts):
+        print(f"  {status}: {counts[status]}")
+    print(f"  Next: {next_checkpoint or '-'}")
+    return 0
 
 
 # =============================================================================
@@ -245,7 +448,7 @@ def cmd_create(args: argparse.Namespace) -> int:
     task_dir = tasks_dir / dir_name
     task_json_path = task_dir / FILE_TASK_JSON
 
-    archived_task_dir = _find_archived_task_by_dir_name(tasks_dir, dir_name)
+    archived_task_dir = find_archived_task_by_dir_name(tasks_dir, dir_name)
     if archived_task_dir:
         print(colored(f"Error: Task already archived: {dir_name}", Colors.RED), file=sys.stderr)
         print(f"Archived at: {_repo_relative_path(archived_task_dir, repo_root)}", file=sys.stderr)
@@ -669,7 +872,7 @@ def cmd_set_branch(args: argparse.Namespace) -> int:
 
     if not branch:
         print(colored("Error: Missing arguments", Colors.RED))
-        print("Usage: python3 task.py set-branch <task-dir> <branch-name>")
+        print("Usage: python task.py set-branch <task-dir> <branch-name>")
         return 1
 
     task_json = target_dir / FILE_TASK_JSON
@@ -700,8 +903,8 @@ def cmd_set_base_branch(args: argparse.Namespace) -> int:
 
     if not base_branch:
         print(colored("Error: Missing arguments", Colors.RED))
-        print("Usage: python3 task.py set-base-branch <task-dir> <base-branch>")
-        print("Example: python3 task.py set-base-branch <dir> develop")
+        print("Usage: python task.py set-base-branch <task-dir> <base-branch>")
+        print("Example: python task.py set-base-branch <dir> develop")
         print()
         print("This sets the target branch for PR (the branch your feature will merge into).")
         return 1
@@ -735,7 +938,7 @@ def cmd_set_scope(args: argparse.Namespace) -> int:
 
     if not scope:
         print(colored("Error: Missing arguments", Colors.RED))
-        print("Usage: python3 task.py set-scope <task-dir> <scope>")
+        print("Usage: python task.py set-scope <task-dir> <scope>")
         return 1
 
     task_json = target_dir / FILE_TASK_JSON

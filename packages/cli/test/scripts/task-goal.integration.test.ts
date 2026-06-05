@@ -77,6 +77,133 @@ function writeTask(
   return dir;
 }
 
+function writeValidGoalArtifacts(taskDir: string): void {
+  fs.writeFileSync(
+    path.join(taskDir, "prd.md"),
+    `# Goal
+
+## Raw Goal Input
+
+Original request.
+
+## Goal Contract
+
+### Objective
+
+Complete the test goal.
+
+### Scope
+
+Validate goal metadata and checkpoints.
+
+### Constraints
+
+Preserve task lifecycle status.
+
+### Done When
+
+- Metadata is written.
+- Checkpoints are visible.
+- Validation passes.
+
+### Stop If
+
+- Required artifacts are missing.
+
+### Token Budget
+
+1000000
+
+## Autonomy Charter
+
+### Frozen Invariants
+
+Do not change lifecycle semantics.
+
+### Delegated Decisions
+
+Choose low-risk implementation details.
+
+### User-Owned Decisions
+
+Stop on scope changes.
+
+### Decision Harness
+
+Low ambiguity is evidence-only; high ambiguity stops.
+
+### Evidence Chain
+
+implement.md records checkpoint evidence.
+`,
+    "utf-8",
+  );
+  fs.writeFileSync(
+    path.join(taskDir, "design.md"),
+    `# Design
+
+## Architecture Shaping
+
+Architecture Shaping: skipped, because this fixture validates command behavior only.
+`,
+    "utf-8",
+  );
+  fs.writeFileSync(
+    path.join(taskDir, "implement.md"),
+    `# Implementation Plan
+
+## Checkpoints
+
+### Checkpoint 1: Reconcile Existing Work
+
+- Type: work
+- Status: done
+- Acceptance / Evidence Required:
+  - Existing work reconciled.
+- Current Evidence:
+  - Fixture.
+- Work Performed:
+  - Fixture setup.
+- Verification Command / Result:
+  - Pending.
+- Remaining Uncertainty:
+  - None.
+- Next Recovery Point:
+  - Continue.
+
+### Checkpoint 2: Add focused tests
+
+- Type: work
+- Status: pending
+- Acceptance / Evidence Required:
+  - Tests added.
+- Current Evidence:
+  - Fixture.
+- Work Performed:
+  - Pending.
+- Verification Command / Result:
+  - Pending.
+- Remaining Uncertainty:
+  - None.
+- Next Recovery Point:
+  - Continue.
+
+## Delegated Decision Log
+
+- None.
+
+## Rejected Options
+
+- None.
+
+## Evidence Chain
+
+- Fixture evidence.
+`,
+    "utf-8",
+  );
+}
+
 function runTask(repo: string, ...args: string[]): SpawnSyncReturns<string> {
   if (!PYTHON_CMD) {
     throw new Error("Python is not available");
@@ -103,6 +230,7 @@ describe.skipIf(PYTHON_CMD === null)("task.py Trellis goal commands", () => {
     const taskDir = writeTask(tmp, "05-31-demo-goal", "planning", {
       meta: { custom: "keep" },
     });
+    writeValidGoalArtifacts(taskDir);
 
     const result = runTask(
       tmp,
@@ -146,26 +274,45 @@ describe.skipIf(PYTHON_CMD === null)("task.py Trellis goal commands", () => {
     expect(taskJson.meta.trellis_goal.updated_at.length).toBeGreaterThan(0);
   });
 
+  it("mark-goal refuses to write metadata when the Goal Contract is missing", () => {
+    const taskDir = writeTask(tmp, "05-31-invalid-goal", "planning");
+
+    const result = runTask(tmp, "mark-goal", "05-31-invalid-goal");
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Goal Contract validation failed");
+    expect(result.stderr).toContain("prd.md missing Goal Contract section");
+
+    const taskJson = JSON.parse(
+      fs.readFileSync(path.join(taskDir, "task.json"), "utf-8"),
+    ) as { meta: Record<string, unknown> };
+    expect(taskJson.meta.trellis_goal).toBeUndefined();
+  });
+
   it("goal-info reports metadata and implement.md checkpoint summary", () => {
     const taskDir = writeTask(tmp, "05-31-checkpoint-goal", "in_progress");
-    fs.writeFileSync(
+    writeValidGoalArtifacts(taskDir);
+    fs.appendFileSync(
       path.join(taskDir, "implement.md"),
-      `# Implementation Plan
-
-## Checkpoints
-
-### Checkpoint 1: Reconcile Existing Work
-- Type: work
-- Status: done
-
-### Checkpoint 2: Add focused tests
-- Type: work
-- Status: pending
-
+      `
 ### Checkpoint 3: Comprehensive Check
+
 - Type: check
 - Status: blocked
+- Acceptance / Evidence Required:
+  - Final checks run.
+- Current Evidence:
+  - Fixture.
+- Work Performed:
+  - Pending.
+- Verification Command / Result:
+  - Pending.
+- Remaining Uncertainty:
+  - None.
+- Next Recovery Point:
+  - Continue.
 `,
+      "utf-8",
     );
 
     const mark = runTask(
@@ -192,7 +339,7 @@ describe.skipIf(PYTHON_CMD === null)("task.py Trellis goal commands", () => {
   });
 
   it("goal-info reports child task hierarchy and drift warnings", () => {
-    writeTask(tmp, "06-01-parent-goal", "in_progress", {
+    const parentDir = writeTask(tmp, "06-01-parent-goal", "in_progress", {
       children: [
         "06-01-child-done",
         "06-01-child-goal",
@@ -200,6 +347,7 @@ describe.skipIf(PYTHON_CMD === null)("task.py Trellis goal commands", () => {
         "06-01-child-missing",
       ],
     });
+    writeValidGoalArtifacts(parentDir);
     writeTask(tmp, "06-01-child-done", "completed", {
       parent: "06-01-parent-goal",
     });
@@ -244,9 +392,10 @@ describe.skipIf(PYTHON_CMD === null)("task.py Trellis goal commands", () => {
   });
 
   it("list marks Trellis goal tasks in the task hierarchy", () => {
-    writeTask(tmp, "06-01-parent-goal", "in_progress", {
+    const parentDir = writeTask(tmp, "06-01-parent-goal", "in_progress", {
       children: ["06-01-child-task"],
     });
+    writeValidGoalArtifacts(parentDir);
     writeTask(tmp, "06-01-child-task", "planning", {
       parent: "06-01-parent-goal",
     });

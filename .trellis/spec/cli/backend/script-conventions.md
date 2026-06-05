@@ -297,6 +297,158 @@ def run_git(args: list[str], cwd: Path | None = None) -> tuple[int, str, str]
 - Returns `(1, "", error_message)` on exception (never raises)
 - Backward-compatible alias in `git_context.py`: `_run_git_command = run_git`
 
+### `common/task_validation.py` — Task Gate and Goal Contract Validation
+
+Centralized validation for Trellis planning gates and Goal Contract artifacts.
+This module is the single source of truth for script-level readiness checks;
+do not duplicate markdown string checks inside `task.py`, `task_store.py`, or
+`task_context.py`.
+
+#### Scenario: Planning and Goal Validation
+
+##### 1. Scope / Trigger
+
+- Trigger: any change to `task.py start`, `task.py validate`,
+  `task.py mark-goal`, Goal Contract artifact shape, planning artifact gates,
+  or sub-agent context readiness checks.
+- Reason: planning and goal readiness are workflow contracts, not advisory text.
+  A task must not silently enter implementation or Goal Mode with missing
+  required artifacts.
+
+##### 2. Signatures
+
+```python
+@dataclass(frozen=True)
+class ValidationIssue:
+    severity: str  # "error" or "warning"
+    message: str
+
+@dataclass(frozen=True)
+class ValidationReport:
+    title: str
+    issues: tuple[ValidationIssue, ...]
+
+    @property
+    def errors(self) -> tuple[ValidationIssue, ...]: ...
+
+    @property
+    def warnings(self) -> tuple[ValidationIssue, ...]: ...
+
+    @property
+    def ok(self) -> bool: ...
+
+def validate_planning_readiness(task_dir: Path, repo_root: Path) -> ValidationReport: ...
+
+def validate_goal_contract(
+    task_dir: Path,
+    repo_root: Path,
+    task_json: dict | None = None,
+) -> ValidationReport: ...
+```
+
+CLI surfaces:
+
+```bash
+python3 .trellis/scripts/task.py validate <task-dir>
+python3 .trellis/scripts/task.py validate <task-dir> --planning
+python3 .trellis/scripts/task.py validate <task-dir> --goal
+python3 .trellis/scripts/task.py start <task-dir>
+python3 .trellis/scripts/task.py mark-goal <task-dir> [--cadence checkpoint-bounded|run-to-completion] [--source new-request|planning-task|in-progress-task]
+```
+
+##### 3. Contracts
+
+- `task.py start` must call `validate_planning_readiness()` before flipping a
+  task from `planning` to `in_progress`. Validation errors abort the command;
+  warnings are printed and do not block.
+- Plain `task.py validate <task-dir>` validates `implement.jsonl` and
+  `check.jsonl` only, plus Goal Contract validation when
+  `task.json.meta.trellis_goal.enabled` is already true. It must not
+  implicitly run planning readiness checks, because seed-only JSONL is valid for
+  lightweight and freshly seeded tasks.
+- `task.py validate --planning` explicitly runs planning readiness validation.
+- `task.py validate --goal` explicitly runs Goal Contract validation even before
+  metadata exists.
+- `task.py mark-goal` must build the proposed `meta.trellis_goal` in memory,
+  validate the Goal Contract with that proposed metadata, and write `task.json`
+  only when validation has no errors.
+- Goal Contract validation validates Trellis artifacts and `task.json`
+  metadata. It must not require or inspect Codex native goal state.
+- Validation helpers return structured severities; callers decide whether an
+  error blocks the command.
+
+##### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+|-----------|-------------------|
+| Default `task.py create` PRD skeleton contains "Lightweight `task`", "Complex `task`", `Grill Gate`, or `sub-agent` guidance text | Planning validation ignores those template guidance lines when inferring whether the task is complex |
+| Complex planning task is missing `design.md` or `implement.md` | `validate_planning_readiness()` returns errors; `task.py start` exits 1 before status change |
+| Complex planning task is missing Architecture Shaping decision | Error with an actionable message naming accepted marker formats |
+| Complex planning task is missing Grill Gate decision | Error; lightweight tasks receive a warning instead |
+| `implement.jsonl` / `check.jsonl` is missing or seed-only for a complex sub-agent task | Warning, not a hard error |
+| Plain `task.py validate` sees seed-only JSONL | Exit 0 when there are no bad file references |
+| `--goal` is passed before `mark-goal` | Reports missing `meta.trellis_goal.enabled` as an error |
+| `mark-goal` sees missing Goal Contract sections | Prints "Goal Contract validation failed", exits 1, and leaves `task.json` without `meta.trellis_goal` |
+| Goal artifacts have warnings only | `mark-goal` writes metadata and prints warnings |
+
+##### 5. Good / Base / Bad Cases
+
+- **Good**: a Trellis Goal task has `prd.md` Goal Contract sections,
+  `design.md`, `implement.md` checkpoints with `- Status:`, and valid goal
+  metadata; `task.py validate --goal --planning` passes.
+- **Base**: a lightweight planning task has only `prd.md`; plain
+  `task.py validate` passes, and `--planning` may warn about a missing Grill
+  Gate decision without treating the task as complex.
+- **Bad**: `task.py mark-goal` writes metadata first and validates afterward.
+  A failed validation would leave a task looking like a Goal even though the
+  contract is incomplete.
+
+##### 6. Tests Required
+
+- Integration test for `task.py start` refusing a complex planning task with
+  missing `design.md`, missing `implement.md`, missing Architecture Shaping, or
+  missing Grill Gate markers.
+- Regression test that plain `task.py validate` remains context-only for
+  seed-only JSONL compatibility.
+- Integration test that `task.py validate --planning` reports planning gate
+  errors and warnings.
+- Regression test that a freshly created default PRD skeleton can still move
+  through `task.py start` as a lightweight task when no user-authored complex
+  signal exists.
+- Integration test that `task.py mark-goal` refuses missing Goal Contract
+  artifacts and preserves existing custom `meta` fields when validation passes.
+- Template tests must copy `common/task_validation.py` into generated Trellis
+  scripts and keep local `.trellis/scripts/` and
+  `packages/cli/src/templates/trellis/scripts/` behavior in sync.
+
+##### 7. Wrong vs Correct
+
+###### Wrong
+
+```python
+def cmd_mark_goal(args: argparse.Namespace) -> int:
+    data["meta"]["trellis_goal"] = {"enabled": True}
+    write_json(task_json_path, data)
+    return 0
+```
+
+This turns Goal metadata into a second source of truth and lets invalid Goal
+Contracts appear valid to continuation tools.
+
+###### Correct
+
+```python
+candidate = dict(data)
+candidate.setdefault("meta", {})["trellis_goal"] = proposed_goal
+report = validate_goal_contract(task_dir, repo_root, candidate)
+if report.errors:
+    return 1
+write_json(task_json_path, candidate)
+```
+
+Metadata is committed only after the durable artifacts satisfy the Goal
+Contract.
+
 ### `common/active_task.py` — Active Task Resolver
 
 All current-task consumers must use the active task resolver instead of reading

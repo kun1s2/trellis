@@ -11,6 +11,7 @@ import {
   commonTaskUtils,
   commonActiveTask,
   commonCliAdapter,
+  commonTaskValidation,
   getDeveloperScript,
   initDeveloperScript,
   taskScript,
@@ -36,6 +37,7 @@ describe("trellis template constants", () => {
     commonTaskUtils,
     commonActiveTask,
     commonCliAdapter,
+    commonTaskValidation,
     getDeveloperScript,
     initDeveloperScript,
     taskScript,
@@ -88,6 +90,7 @@ describe("trellis template constants", () => {
       commonInit,
       commonPaths,
       commonActiveTask,
+      commonTaskValidation,
       getDeveloperScript,
       taskScript,
     ];
@@ -322,6 +325,7 @@ describe("getAllScripts", () => {
     expect(scripts.has("common/__init__.py")).toBe(true);
     expect(scripts.has("common/paths.py")).toBe(true);
     expect(scripts.has("common/active_task.py")).toBe(true);
+    expect(scripts.has("common/task_validation.py")).toBe(true);
     expect(scripts.has("task.py")).toBe(true);
     expect(scripts.has("get_developer.py")).toBe(true);
   });
@@ -342,6 +346,9 @@ describe("getAllScripts", () => {
     const scripts = getAllScripts();
     expect(scripts.get("__init__.py")).toBe(scriptsInit);
     expect(scripts.get("common/__init__.py")).toBe(commonInit);
+    expect(scripts.get("common/task_validation.py")).toBe(
+      commonTaskValidation,
+    );
     expect(scripts.get("task.py")).toBe(taskScript);
   });
 

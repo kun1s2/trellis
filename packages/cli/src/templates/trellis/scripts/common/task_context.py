@@ -24,6 +24,11 @@ from pathlib import Path
 from .log import Colors, colored
 from .paths import get_repo_root
 from .task_utils import resolve_task_dir
+from .task_validation import (
+    ValidationReport,
+    validate_goal_contract,
+    validate_planning_readiness,
+)
 
 
 # =============================================================================
@@ -85,7 +90,7 @@ def cmd_add_context(args: argparse.Namespace) -> int:
 # =============================================================================
 
 def cmd_validate(args: argparse.Namespace) -> int:
-    """Validate JSONL context files."""
+    """Validate task context files and workflow gates."""
     repo_root = get_repo_root()
     target_dir = resolve_task_dir(args.dir, repo_root)
 
@@ -93,15 +98,27 @@ def cmd_validate(args: argparse.Namespace) -> int:
         print(colored("Error: task directory required", Colors.RED))
         return 1
 
-    print(colored("=== Validating Context Files ===", Colors.BLUE))
+    print(colored("=== Validating Task ===", Colors.BLUE))
     print(f"Target dir: {target_dir}")
     print()
 
     total_errors = 0
+    task_json = _read_task_json(target_dir)
+    goal_enabled = _goal_metadata_enabled(task_json)
+
+    print(colored("[Context files]", Colors.CYAN))
     for jsonl_name in ["implement.jsonl", "check.jsonl"]:
         jsonl_file = target_dir / jsonl_name
         errors = _validate_jsonl(jsonl_file, repo_root)
         total_errors += errors
+
+    if args.planning:
+        print()
+        total_errors += _print_report(validate_planning_readiness(target_dir, repo_root))
+
+    if args.goal or goal_enabled:
+        print()
+        total_errors += _print_report(validate_goal_contract(target_dir, repo_root, task_json))
 
     print()
     if total_errors == 0:
@@ -110,6 +127,39 @@ def cmd_validate(args: argparse.Namespace) -> int:
     else:
         print(colored(f"✗ Validation failed ({total_errors} errors)", Colors.RED))
         return 1
+
+
+def _print_report(report: ValidationReport) -> int:
+    """Print a structured validation report and return hard-error count."""
+    print(colored(f"[{report.title}]", Colors.CYAN))
+    if not report.issues:
+        print(f"  {colored('✓ passed', Colors.GREEN)}")
+        return 0
+
+    for issue in report.issues:
+        color = Colors.RED if issue.severity == "error" else Colors.YELLOW
+        label = "ERROR" if issue.severity == "error" else "WARN"
+        print(f"  {colored(f'{label}: {issue.message}', color)}")
+    return len(report.errors)
+
+
+def _read_task_json(target_dir: Path) -> dict:
+    task_json_path = target_dir / "task.json"
+    if not task_json_path.is_file():
+        return {}
+    try:
+        data = json.loads(task_json_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _goal_metadata_enabled(task_json: dict) -> bool:
+    meta = task_json.get("meta")
+    if not isinstance(meta, dict):
+        return False
+    goal = meta.get("trellis_goal")
+    return isinstance(goal, dict) and goal.get("enabled") is True
 
 
 def _validate_jsonl(jsonl_file: Path, repo_root: Path) -> int:

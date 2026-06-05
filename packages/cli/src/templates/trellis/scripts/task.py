@@ -46,6 +46,7 @@ from common.active_task import (
 )
 from common.io import read_json, write_json
 from common.task_utils import resolve_task_dir, run_task_hooks
+from common.task_validation import validate_planning_readiness
 from common.tasks import children_progress, is_trellis_goal, iter_active_tasks
 
 # Import command handlers from split modules (also re-exports for plan.py compatibility)
@@ -95,6 +96,22 @@ def cmd_start(args: argparse.Namespace) -> int:
         task_dir = str(full_path)
 
     task_json_path = full_path / FILE_TASK_JSON
+    if task_json_path.is_file():
+        data = read_json(task_json_path)
+        if data and data.get("status") == "planning":
+            report = validate_planning_readiness(full_path, repo_root)
+            if report.errors:
+                print(colored("Error: planning gate validation failed", Colors.RED))
+                for issue in report.issues:
+                    color = Colors.RED if issue.severity == "error" else Colors.YELLOW
+                    label = "ERROR" if issue.severity == "error" else "WARN"
+                    print(colored(f"  {label}: {issue.message}", color))
+                print("Run `task.py validate <dir> --planning` for the full readiness report.")
+                return 1
+            if report.warnings:
+                print(colored("Planning gate warnings:", Colors.YELLOW))
+                for issue in report.warnings:
+                    print(colored(f"  WARN: {issue.message}", Colors.YELLOW))
 
     if not resolve_context_key():
         # Degraded mode: no session identity available.
@@ -418,6 +435,16 @@ def main() -> int:
     # validate
     p_validate = subparsers.add_parser("validate", help="Validate context files")
     p_validate.add_argument("dir", help="Task directory")
+    p_validate.add_argument(
+        "--planning",
+        action="store_true",
+        help="Validate planning readiness gate even when task is not in planning status",
+    )
+    p_validate.add_argument(
+        "--goal",
+        action="store_true",
+        help="Validate Trellis Goal Contract artifacts",
+    )
 
     # list-context
     p_listctx = subparsers.add_parser("list-context", help="List context entries")

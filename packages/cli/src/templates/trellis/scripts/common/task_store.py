@@ -61,6 +61,7 @@ from .task_utils import (
     resolve_task_dir,
     run_task_hooks,
 )
+from .task_validation import validate_goal_contract
 
 
 # =============================================================================
@@ -330,6 +331,20 @@ def cmd_mark_goal(args: argparse.Namespace) -> int:
         "updated_at": now,
     }
     meta["trellis_goal"] = trellis_goal
+
+    report = validate_goal_contract(task_dir, repo_root, data)
+    if report.errors:
+        print(colored("Error: Goal Contract validation failed", Colors.RED), file=sys.stderr)
+        for issue in report.issues:
+            color = Colors.RED if issue.severity == "error" else Colors.YELLOW
+            label = "ERROR" if issue.severity == "error" else "WARN"
+            print(colored(f"  {label}: {issue.message}", color), file=sys.stderr)
+        print("Run `task.py validate <dir> --goal` for the full Goal Contract report.", file=sys.stderr)
+        return 1
+    if report.warnings:
+        print(colored("Goal Contract warnings:", Colors.YELLOW), file=sys.stderr)
+        for issue in report.warnings:
+            print(colored(f"  WARN: {issue.message}", Colors.YELLOW), file=sys.stderr)
 
     task_json_path = task_dir / FILE_TASK_JSON
     if not write_json(task_json_path, data):

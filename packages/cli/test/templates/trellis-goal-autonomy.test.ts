@@ -58,6 +58,19 @@ describe("trellis-goal delegated autonomy template contract", () => {
     }
   });
 
+  it("uses the project default native goal token budget unless the user overrides it", () => {
+    const skill = trellisGoalFile("SKILL.md");
+    const protocol = trellisGoalFile("references/trellis-goal-protocol.md");
+    const bundle = trellisGoalBundleContent();
+
+    expect(skill).toContain("default native goal `token_budget` of `1000000`");
+    expect(skill).toContain("pass `token_budget: 1000000` by default");
+    expect(skill).toContain("Use the project default `token_budget: 1000000`");
+    expect(protocol).toContain("project default `token_budget: 1000000`");
+    expect(bundle).toContain("Token Budget**: the project default `1000000`");
+    expect(bundle).not.toContain("Omit `token_budget` for native handoff by default");
+  });
+
   it("workflow goal overrides route active goals through autonomous research, grill, and evidence updates", () => {
     for (const status of ["in_progress", "in_progress-inline"]) {
       const block = workflowStateBreadcrumb(status);
