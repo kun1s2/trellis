@@ -1,0 +1,9 @@
+{
+  "version": "0.6.0-beta.23",
+  "description": "Beta patch: reduce legacy Trellis task noise and tighten Codex workflow, goal, grill, and spec bootstrap behavior.",
+  "breaking": false,
+  "recommendMigrate": false,
+  "changelog": "**Enhancements:**\n- feat(codex): add architecture shaping, grill-me, grill-agents, and stricter goal/task-context guidance for Codex-managed Trellis workflows.\n- feat(task): human-readable Trellis task artifacts now default to Chinese-friendly wording while preserving machine-readable task metadata.\n- feat(spec): spec bootstrap guidance now routes unclear codebase discovery through `code-context-search` / Fast Context instead of unavailable GitNexus or ABCoder tools.\n\n**Bug Fixes:**\n- fix(codex): remove the unstable `trellis codex skills` session override path and keep `trellis codex` as a direct launcher with passthrough args.\n- fix(release): release scripts push only the current release tag during beta/rc publishing.",
+  "migrations": [],
+  "notes": "Beta patch on top of 0.6.0-beta.22. Install with `npm install -g psymoth@beta` and run `trellis update` to refresh Codex workflow, goal, grill, and spec bootstrap templates. No migration command is required."
+}

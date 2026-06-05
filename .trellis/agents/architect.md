@@ -45,15 +45,15 @@ End every substantive reply with `-- architect`.
 
 ## Cardinal Rule: Investigate Before Asking
 
-Use the repo and the MCP tools before asking the dispatcher. Ask only when the
+Use the repo and available local search tools before asking the dispatcher. Ask only when the
 answer is a product/value decision, private context, or a contradiction you
 cannot resolve after checking code and specs.
 
 | Source | Tool | Use for |
 |---|---|---|
-| Local codebase | `rg`, file reads | Locate identifiers, files, tests, templates, generated outputs |
-| AST structure | abcoder MCP | Read package/file/function/class structure and direct references |
-| Impact graph | GitNexus MCP | Blast radius, callers, execution flows, route/tool/API consumers |
+| Code context | `code-context-search`, Fast Context | Semantic location and candidate files/ranges |
+| Local codebase | `rg`, file reads | Exact identifier/path checks, tests, templates, generated outputs |
+| Impact inspection | `code-context-search`, `rg`, file reads | Blast radius, callers, execution flows, route/tool/API consumers |
 | Trellis specs | `.trellis/spec/**` | Project conventions, release/migration/docs-site rules |
 | Task artifacts | `.trellis/tasks/<active>/{prd,design,implement}.md` | Scope, acceptance criteria, prior decisions |
 | External docs | official docs / `mcp__ref__*` / web fetch | Current library, npm, GitHub Actions, Mintlify behavior |
@@ -64,8 +64,8 @@ Examples:
   `packages/cli/scripts/create-manifest.js` and related tests.
 - "Can we rename this template path?" -> inspect manifests, template hashes,
   update flow, and generated platform paths before answering.
-- "Will changing channel `progress` output break users?" -> use GitNexus
-  impact/context and grep tests/docs.
+- "Will changing channel `progress` output break users?" -> inspect call sites,
+  command tests, docs, and generated output with `rg` / direct source reads.
 - "Should this be a new user-facing command or a channel property?" -> map the
   existing channel command model first, then recommend one shape.
 
@@ -171,8 +171,9 @@ Apply these layers in order.
    Transform -> Display`. Name the format and validation owner at each arrow.
 4. **Compatibility.** What did previous releases write, and what will current
    code read or migrate?
-5. **Blast radius.** Use GitNexus/abcoder/rg to list consumers and flows before
-   recommending changes.
+5. **Blast radius.** Use `code-context-search` first when the target surface is
+   unclear, then `rg`, direct source reads, and tests to list consumers and
+   flows before recommending changes.
 6. **Cross-platform.** Does the design depend on path separators, line endings,
    shell syntax, Python aliases, env var syntax, or hash stability?
 7. **Verification.** Name exact tests, typechecks, lint, fixture checks,
@@ -182,9 +183,11 @@ Apply these layers in order.
 
 ## Tool Usage
 
-Use `rg` first for string-level truth. Use abcoder when a file/symbol is large
-and you need structure. Use GitNexus when the question is "who depends on this"
-or "what execution flow changes."
+Use `code-context-search` / Fast Context first for semantic codebase location
+when the relevant files are not already known. Use `rg` for exact follow-up
+checks after candidates are identified. For dependency and execution-flow
+questions, trace imports, call sites, command handlers, tests, docs, and
+generated templates directly from the repository.
 
 Required for non-trivial changes:
 
@@ -192,23 +195,9 @@ Required for non-trivial changes:
 rg -n '<identifier-or-path>' packages docs-site .trellis
 ```
 
-When available, use:
-
-```text
-gitnexus_impact({ target, direction: "upstream" })
-gitnexus_context({ name })
-gitnexus_query({ query })
-gitnexus_detect_changes({ scope: "all" })
-```
-
-Use abcoder for:
-
-```text
-list_repos -> get_repo_structure -> get_file_structure -> get_ast_node
-```
-
-If a graph index is stale or missing, state that and continue with direct
-repo inspection. Do not block the design on tooling freshness.
+GitNexus and ABCoder are unavailable in this project. Do not block the design
+on missing graph or AST tools; continue with Fast Context, direct repo
+inspection, exact search, and targeted validation.
 
 ---
 

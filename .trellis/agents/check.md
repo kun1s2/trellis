@@ -55,9 +55,9 @@ specs, tests, and call sites yourself.
 | Source | Tool | Use for |
 |---|---|---|
 | Diff | `git status`, `git diff`, `git log` | The change under review |
-| Local code | `rg`, file reads | Identifier/path presence, tests, generated files |
-| AST | abcoder MCP | File/symbol structure, direct references |
-| Impact graph | GitNexus MCP | Blast radius, execution flows, route/tool/API consumers |
+| Code context | `code-context-search`, Fast Context | Semantic location and candidate files/ranges |
+| Local code | `rg`, file reads | Exact identifier/path presence, tests, generated files |
+| Impact inspection | `code-context-search`, `rg`, file reads | Blast radius, execution flows, route/tool/API consumers |
 | Task artifacts | `.trellis/tasks/<active>/{prd,design,implement}.md` | Intended behavior and acceptance criteria |
 | Specs | `.trellis/spec/**` | Release, migration, docs-site, workflow rules |
 | Official docs | docs / ref / web fetch | Current external API behavior when relevant |
@@ -78,7 +78,8 @@ specs, tests, and call sites yourself.
    git diff
    ```
 
-4. **Trace impact.** Use `rg`; use GitNexus/abcoder for shared symbols,
+4. **Trace impact.** Use `code-context-search` first when the target surface is
+   unclear, then `rg`, direct source reads, and tests for shared symbols,
    command handlers, API-like surfaces, or template/migration changes.
 5. **Apply thinking-guide triggers.** Code reuse, cross-layer, and
    cross-platform triggers are mandatory review lenses, not optional advice.
@@ -300,23 +301,17 @@ Budget for false positives. Before escalating a reviewer finding:
 
 ## Tool Usage
 
-Use GitNexus when the review question is impact:
+For impact questions, trace the affected surface directly:
 
 ```text
-gitnexus_impact({ target, direction: "upstream" })
-gitnexus_context({ name })
-gitnexus_detect_changes({ scope: "all" })
-gitnexus_api_impact({ route or file })  // before route handler changes
-gitnexus_tool_map({ tool })             // before MCP/tool shape changes
+code-context-search for semantic location when files are not already known
+rg for the touched identifier/path/command/route/tool name after candidates exist
+read direct callers, command handlers, tests, docs, and generated templates
 ```
 
-Use abcoder when the review question is local structure:
-
-```text
-list_repos -> get_repo_structure -> get_file_structure -> get_ast_node
-```
-
-If an index is stale, say so and fall back to direct repo inspection.
+GitNexus and ABCoder are unavailable in this project. Do not require graph or
+AST tools for review; continue with Fast Context, direct repo inspection,
+exact search, and targeted validation.
 
 ---
 

@@ -14,7 +14,7 @@ This platform does NOT auto-inject task context via hook. Before doing anything 
 Try in order — stop at the first one that yields a task path:
 
 1. **Look at the dispatch prompt** you received from the main agent. If its first line is `Active task: <path>` (e.g. `Active task: .trellis/tasks/04-17-foo`), use that path. The main agent is required to include this line on class-2 platforms.
-2. **Run** `python3 ./.trellis/scripts/task.py current --source` and read the `Current task:` line.
+2. **Run** `python ./.trellis/scripts/task.py current --source` and read the `Current task:` line.
 3. **If both fail** (no `Active task:` line in the prompt and `task.py current` returns no task), ask the user which task to work on; do NOT guess.
 
 ### Step 2: Load task context from the resolved path
@@ -24,9 +24,17 @@ Try in order — stop at the first one that yields a task path:
    **Skip rows without a `"file"` field** (e.g. `{"_example": "..."}` seed rows left over from `task.py create` before the curator ran).
 3. Read the task's `prd.md` (requirements), then `design.md` if present (technical design), then `implement.md` if present (execution plan).
 
-If `implement.jsonl` has no curated entries (only a seed row, or the file is missing), fall back to: read the task artifacts, list available specs with `python3 ./.trellis/scripts/get_context.py --mode packages`, and pick the specs that match the task domain yourself. Do NOT block on the missing jsonl — lightweight tasks may be PRD-only, while complex tasks may also include `design.md` and `implement.md`.
+If `implement.jsonl` has no curated entries (only a seed row, or the file is missing), fall back to: read the task artifacts, list available specs with `python ./.trellis/scripts/get_context.py --mode packages`, and pick the specs that match the task domain yourself. Do NOT block on the missing jsonl — lightweight tasks may be PRD-only, while complex tasks may also include `design.md` and `implement.md`.
 
 If the resolved task path has no `prd.md`, ask the user what to work on; do NOT proceed without context.
+
+### Step 3: Human-readable artifact language
+
+When you write or update human-readable task artifacts or Markdown summaries, use Chinese by default and preserve original English technical terms. This applies to `prd.md`, `design.md`, `implement.md`, check summaries, review notes, and similar human-facing Markdown.
+
+Do not translate filenames, commands, status values, JSON keys, API names, package names, symbol names, or Trellis workflow terms such as `PRD`, `task`, `workflow`, `Grill Gate`, `sub-agent`, and `quality gate`.
+
+Do not localize machine-readable artifacts: keep `task.json`, `implement.jsonl`, `check.jsonl`, schema keys, status values, CLI arguments, and filenames stable.
 
 ---
 

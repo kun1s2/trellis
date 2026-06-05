@@ -106,15 +106,5 @@ channel:
 # (main agent spawns trellis-implement / trellis-check / trellis-research
 # sub-agents).
 #
-# `disabled_skills` and `disabled_skill_paths` are applied by the Trellis Codex
-# launcher (`trellis codex` or `tl codex`). Trellis injects session-level
-# `skills.config` entries so noisy global/user skills can be hidden for this
-# project without disabling repo-local skills. Direct `codex` launches use
-# Codex's own config behavior and will not read these Trellis-only keys.
-#
 # codex:
 #   dispatch_mode: inline  # or "sub-agent" to dispatch trellis-* sub-agents
-#   disabled_skills:
-#     - grill-me
-#   disabled_skill_paths:
-#     - D:/Users/Kun/.agents/skills/grill-me/SKILL.md

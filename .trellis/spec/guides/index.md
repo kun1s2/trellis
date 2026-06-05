@@ -26,6 +26,12 @@ These guides help you **ask the right questions before coding**.
 
 ---
 
+## Project-Local Operating Rules
+
+- When interpreting "current task" or maintaining Trellis platform behavior, read [AGENTS.md](../../../AGENTS.md) for the Codex-only scope and historical task filtering rules.
+
+---
+
 ## Quick Reference: Thinking Triggers
 
 ### When to Think About Cross-Layer Issues

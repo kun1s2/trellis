@@ -7,7 +7,6 @@ import { update } from "../commands/update.js";
 import { upgrade } from "../commands/upgrade.js";
 import { uninstall } from "../commands/uninstall.js";
 import { runCodexLauncher } from "../commands/codex.js";
-import { runCodexSkillsCommand } from "../commands/codex-skills.js";
 import { runMem } from "../commands/mem.js";
 import {
   runWorkflowCommand,
@@ -245,10 +244,6 @@ program
   .argument("[args...]", "Arguments passed through to the codex CLI")
   .action(async (args: string[]) => {
     try {
-      if (args[0] === "skills") {
-        runCodexSkillsCommand(args.slice(1));
-        return;
-      }
       await runCodexLauncher({ args });
     } catch (error) {
       console.error(
