@@ -3,7 +3,7 @@
   "name": "codex-trellis-understand-analysis",
   "title": "Analyze Codex Trellis architecture with Understand Anything",
   "description": "",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": null,
@@ -22,5 +22,15 @@
   "parent": null,
   "relatedFiles": [],
   "notes": "",
-  "meta": {}
+  "meta": {
+    "trellis_goal": {
+      "enabled": true,
+      "version": 1,
+      "cadence": "run-to-completion",
+      "source": "new-request",
+      "converted_from_status": "planning",
+      "converted_at": "2026-06-05T00:19:30+08:00",
+      "updated_at": "2026-06-05T00:19:30+08:00"
+    }
+  }
 }

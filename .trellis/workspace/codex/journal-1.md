@@ -179,3 +179,36 @@ Restored Trellis-native attended grill skill for Codex, routed Grill Gate decisi
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: Codex sub-agent workflow parity
+
+**Date**: 2026-06-05
+**Task**: Codex sub-agent workflow parity
+**Branch**: `main`
+
+### Summary
+
+Aligned Codex sub-agent workflow semantics with inline path, clarified Goal/Grill/Architecture Shaping ownership, fixed Codex pull-based prelude injection, and added template/spec/test coverage.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6f1cd4aa` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
