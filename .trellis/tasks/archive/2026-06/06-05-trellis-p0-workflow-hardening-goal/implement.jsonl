@@ -1,0 +1,7 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/cli/backend/script-conventions.md", "reason": "Python Trellis script conventions and template sync contracts"}
+{"file": ".trellis/spec/cli/backend/index.md", "reason": "CLI backend spec index for Trellis runtime hardening"}
+{"file": ".trellis/spec/cli/backend/workflow-state-contract.md", "reason": "Workflow-state lifecycle and gate invariants"}
+{"file": ".trellis/spec/cli/unit-test/conventions.md", "reason": "Vitest and regression test conventions"}
+{"file": ".trellis/tasks/06-05-trellis-p0-workflow-hardening-goal/research/architecture-shaping.md", "reason": "Accepted architecture constraints for this goal"}
+{"file": ".trellis/tasks/06-05-audit-trellis-workflows-optimization/research/trellis-workflow-audit.md", "reason": "Parent audit report defining P0 scope"}

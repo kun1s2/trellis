@@ -1,0 +1,7 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/cli/backend/index.md", "reason": "CLI backend quality and routing specs"}
+{"file": ".trellis/spec/cli/backend/workflow-state-contract.md", "reason": "Workflow-state validation requirements"}
+{"file": ".trellis/spec/cli/backend/script-conventions.md", "reason": "Python script and generated template checks"}
+{"file": ".trellis/spec/cli/backend/quality-guidelines.md", "reason": "CLI code quality standards"}
+{"file": ".trellis/spec/cli/unit-test/conventions.md", "reason": "Test convention checks"}
+{"file": ".trellis/tasks/06-05-trellis-p0-workflow-hardening-goal/research/architecture-shaping.md", "reason": "Architecture constraints to verify"}
