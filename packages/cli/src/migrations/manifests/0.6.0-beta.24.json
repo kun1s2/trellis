@@ -1,0 +1,9 @@
+{
+  "version": "0.6.0-beta.24",
+  "description": "Beta patch: align npm package repository metadata with the psymoth/trellis GitHub provenance source.",
+  "breaking": false,
+  "recommendMigrate": false,
+  "changelog": "**Bug Fixes:**\n- fix(release): align `psymoth` and `psymoth-core` package repository metadata with `psymoth/trellis` so npm provenance verification accepts GitHub Actions publishes.",
+  "migrations": [],
+  "notes": "Beta patch on top of 0.6.0-beta.23. Install with `npm install -g psymoth@beta`. No migration command is required."
+}
