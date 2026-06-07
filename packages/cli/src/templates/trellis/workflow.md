@@ -11,6 +11,10 @@
 5. **Production-shaped MVPs** — Trellis-created projects are long-lived by default; reduce scope when needed, but do not collapse maintainable structure into a toy one-file implementation
 6. **Capture learnings** — after each task, review and write new knowledge back to spec
 
+## Human-Readable Language
+
+面向人类阅读的 Trellis 文档和协作总结默认使用中文表达；保留 file name、command、API name、JSON key、status value、symbol name 和 Trellis technical terms 的原始语言，例如 `PRD`、`task`、`workflow`、`Grill Gate`、`sub-agent`、`quality gate`、`task.json`、`implement.jsonl`、`check.jsonl`。
+
 ---
 
 ## Trellis System

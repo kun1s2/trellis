@@ -129,16 +129,16 @@ describe("init() joiner onboarding", () => {
     expect(taskJson.title).toContain("bob");
 
     const prd = fs.readFileSync(path.join(joiner, FILE_NAMES.PRD), "utf-8");
-    // PRD is AI-facing instructions ("you (the AI) are running this task").
+    // PRD is AI-facing instructions in the localized Trellis docs policy.
     // Mentions the developer in context + user-facing elements the AI should
     // reference.
     expect(prd).toContain("bob");
-    expect(prd).toContain("You (the AI) are running this task");
+    expect(prd).toContain("你（AI）正在执行这个 task");
     expect(prd).toContain("workflow.md");
     expect(prd).toContain(".trellis/spec/");
     expect(prd).toContain("00-join-bob");
     // Fallback text for empty archive
-    expect(prd).toContain("archive is empty");
+    expect(prd).toContain("archive 为空");
     const expectedPythonCmd = process.platform === "win32" ? "python" : "python3";
     expect(prd).toContain(
       `${expectedPythonCmd} ./.trellis/scripts/task.py list --assignee bob`,

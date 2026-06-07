@@ -1,0 +1,7 @@
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Review init/platform template generation contracts."}
+{"file":".trellis/spec/cli/backend/configurator-shared.md","reason":"Review shared prelude/template helper invariants if touched."}
+{"file":".trellis/spec/cli/backend/quality-guidelines.md","reason":"Review CLI TypeScript quality constraints."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Review test placement, assertion style, and when integration coverage is required."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check for duplicated language-policy sources or avoidable drift."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check shared template changes across generated platform surfaces."}
+{"file":".trellis/tasks/06-07-localize-new-project-docs/research/architecture-shaping.md","reason":"Review accepted constraints and toy-MVP risks."}

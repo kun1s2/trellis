@@ -326,20 +326,20 @@ function getBootstrapChecklistItems(
   packages?: DetectedPackage[],
 ): string[] {
   if (packages && packages.length > 0) {
-    const items = packages.map((pkg) => `Fill guidelines for ${pkg.name}`);
-    items.push("Add code examples");
+    const items = packages.map((pkg) => `填写 ${pkg.name} 的 guidelines`);
+    items.push("补充真实代码示例");
     return items;
   }
   if (projectType === "frontend") {
-    return ["Fill frontend guidelines", "Add code examples"];
+    return ["填写 frontend guidelines", "补充真实代码示例"];
   }
   if (projectType === "backend") {
-    return ["Fill backend guidelines", "Add code examples"];
+    return ["填写 backend guidelines", "补充真实代码示例"];
   }
   return [
-    "Fill backend guidelines",
-    "Fill frontend guidelines",
-    "Add code examples",
+    "填写 backend guidelines",
+    "填写 frontend guidelines",
+    "补充真实代码示例",
   ];
 }
 
@@ -369,79 +369,82 @@ function getBootstrapPrdContent(
     .map((item) => `- [ ] ${item}`)
     .join("\n");
 
-  const header = `# Bootstrap Task: Fill Project Development Guidelines
+  const header = `# Bootstrap Task: 填写项目开发 guidelines
 
-**You (the AI) are running this task. The developer does not read this file.**
+**你（AI）正在执行这个 task。developer 不会主动阅读这份文件。**
 
-The developer just ran \`trellis init\` on this project for the first time.
-\`.trellis/\` now exists with empty spec scaffolding, and this bootstrap task
-exists under \`.trellis/tasks/\`. When they want to work on it, they should start
-this task from a session that provides Trellis session identity.
+developer 刚刚第一次在这个项目里运行 \`trellis init\`。\`.trellis/\`
+已经生成了空的 spec scaffold，这个 bootstrap task 也已经写入
+\`.trellis/tasks/\`。当 developer 想处理它时，应从具备 Trellis session
+identity 的会话里继续这个 task。
 
-**Your job**: help them populate \`.trellis/spec/\` with the team's real
-coding conventions. Every future AI session — this project's
-\`trellis-implement\` and \`trellis-check\` sub-agents — auto-loads spec files
-listed in per-task jsonl manifests. Empty spec = sub-agents write generic
-code. Real spec = sub-agents match the team's actual patterns.
+**你的任务**：帮助 developer 把团队真实的 coding conventions 写进
+\`.trellis/spec/\`。未来每个 AI session，包括本项目的
+\`trellis-implement\` 和 \`trellis-check\` sub-agents，都会自动加载
+per-task jsonl manifest 中列出的 spec files。空 spec 会让 sub-agents 写出
+generic code；真实 spec 会让 sub-agents 贴合团队现有模式。
 
-Don't dump instructions. Open with a short greeting, figure out if the repo
-has any existing convention docs (CLAUDE.md, .cursorrules, etc.), and drive
-the rest conversationally.
+默认用中文交流并编写面向人类阅读的 Trellis 文档；保留 English technical
+terms，例如 file name、command、API name、JSON key、status value、
+symbol name、\`PRD\`、\`task\`、\`workflow\`、\`sub-agent\`、
+\`quality gate\`、\`implement.jsonl\` 和 \`check.jsonl\`。
+
+不要一次性倾倒说明。先用一句简短问候开场，确认 repo 是否已有
+convention docs（例如 CLAUDE.md、.cursorrules、CONTRIBUTING.md），再用对话方式推进。
 
 ---
 
-## Status (update the checkboxes as you complete each item)
+## Status / 状态（完成后更新 checkbox）
 
 ${checklistMarkdown}
 
 ---
 
-## Spec files to populate
+## 需要填写的 spec files
 `;
 
   const backendSection = `
 
 ### Backend guidelines
 
-| File | What to document |
+| File | 需要记录什么 |
 |------|------------------|
-| \`.trellis/spec/backend/directory-structure.md\` | Where different file types go (routes, services, utils) |
-| \`.trellis/spec/backend/database-guidelines.md\` | ORM, migrations, query patterns, naming conventions |
-| \`.trellis/spec/backend/error-handling.md\` | How errors are caught, logged, and returned |
-| \`.trellis/spec/backend/logging-guidelines.md\` | Log levels, format, what to log |
-| \`.trellis/spec/backend/quality-guidelines.md\` | Code review standards, testing requirements |
+| \`.trellis/spec/backend/directory-structure.md\` | routes、services、utils 等不同文件类型放在哪里 |
+| \`.trellis/spec/backend/database-guidelines.md\` | ORM、migrations、query patterns、naming conventions |
+| \`.trellis/spec/backend/error-handling.md\` | errors 如何捕获、记录并返回 |
+| \`.trellis/spec/backend/logging-guidelines.md\` | log levels、format，以及哪些信息需要记录 |
+| \`.trellis/spec/backend/quality-guidelines.md\` | code review standards、testing requirements |
 `;
 
   const frontendSection = `
 
 ### Frontend guidelines
 
-| File | What to document |
+| File | 需要记录什么 |
 |------|------------------|
-| \`.trellis/spec/frontend/directory-structure.md\` | Component/page/hook organization |
-| \`.trellis/spec/frontend/component-guidelines.md\` | Component patterns, props conventions |
-| \`.trellis/spec/frontend/hook-guidelines.md\` | Custom hook naming, patterns |
-| \`.trellis/spec/frontend/state-management.md\` | State library, patterns, what goes where |
-| \`.trellis/spec/frontend/type-safety.md\` | TypeScript conventions, type organization |
-| \`.trellis/spec/frontend/quality-guidelines.md\` | Linting, testing, accessibility |
+| \`.trellis/spec/frontend/directory-structure.md\` | component / page / hook 的组织方式 |
+| \`.trellis/spec/frontend/component-guidelines.md\` | component patterns、props conventions |
+| \`.trellis/spec/frontend/hook-guidelines.md\` | custom hook naming 与 patterns |
+| \`.trellis/spec/frontend/state-management.md\` | state library、patterns，以及状态应该放在哪里 |
+| \`.trellis/spec/frontend/type-safety.md\` | TypeScript conventions、type organization |
+| \`.trellis/spec/frontend/quality-guidelines.md\` | linting、testing、accessibility |
 `;
 
   const footer = `
 
-### Thinking guides (already populated)
+### Thinking guides（已预填）
 
-\`.trellis/spec/guides/\` contains general thinking guides pre-filled with
-best practices. Customize only if something clearly doesn't fit this project.
+\`.trellis/spec/guides/\` 已经预填了通用 thinking guides。只有在某条规则明显
+不适合当前项目时才需要调整。
 
 ---
 
-## How to fill the spec
+## 如何填写 spec
 
-### Step 1: Import from existing convention files first (preferred)
+### Step 1: 优先从现有 convention files 导入
 
-Search the repo for existing convention docs. If any exist, read them and
-extract the relevant rules into the matching \`.trellis/spec/\` files —
-usually much faster than documenting from scratch.
+先搜索 repo 里是否已有 convention docs。如果存在，读取它们，并把相关规则提取到
+匹配的 \`.trellis/spec/\` files 里。这通常比从零总结更快，也更贴近现实。
 
 | File / Directory | Tool |
 |------|------|
@@ -458,60 +461,56 @@ usually much faster than documenting from scratch.
 | \`CONTRIBUTING.md\` | General project conventions |
 | \`.editorconfig\` | Editor formatting rules |
 
-### Step 2: Analyze the codebase for anything not covered by existing docs
+### Step 2: 分析现有文档没覆盖的 codebase 事实
 
-Scan real code to discover patterns. Before writing each spec file:
-- Find 2-3 real examples of each pattern in the codebase.
-- Reference real file paths (not hypothetical ones).
-- Document anti-patterns the team clearly avoids.
+扫描真实代码来发现 patterns。写每个 spec file 之前：
+- 为每类 pattern 找到 2-3 个真实代码示例。
+- 引用真实 file paths，不写假想路径。
+- 记录团队明确避免的 anti-patterns。
 
-### Step 3: Document reality, not ideals
+### Step 3: 记录现实，不写愿望
 
-**Critical**: write what the code *actually does*, not what it should do.
-Sub-agents match the spec, so aspirational patterns that don't exist in the
-codebase will cause sub-agents to write code that looks out of place.
+**关键**：写代码当前 *实际怎么做*，不要写它“应该怎么做”。Sub-agents 会按 spec
+工作；如果 spec 里写了 codebase 中不存在的理想模式，sub-agents 会写出不合群的代码。
 
-If the team has known tech debt, document the current state — improvement
-is a separate conversation, not a bootstrap concern.
-
----
-
-## Quick explainer of the runtime (share when they ask "why do we need spec at all")
-
-- Every AI coding task spawns two sub-agents: \`trellis-implement\` (writes
-  code) and \`trellis-check\` (verifies quality).
-- Each task has \`implement.jsonl\` / \`check.jsonl\` manifests listing which
-  spec files to load.
-- The platform hook auto-injects those spec files + the task's \`prd.md\`
-  into every sub-agent prompt, so the sub-agent codes/reviews per team
-  conventions without anyone pasting them manually.
-- Source of truth: \`.trellis/spec/\`. That's why filling it well now pays
-  off forever.
+如果团队有已知 tech debt，记录当前状态即可。改进是另一个 conversation，不属于
+bootstrap 任务本身。
 
 ---
 
-## Completion
+## Runtime 快速说明（当 developer 问“为什么需要 spec”时再讲）
 
-When the developer confirms the checklist items above are done with real
-examples (not placeholders), guide them to run:
+- 每个 AI coding task 会使用两个 sub-agents：\`trellis-implement\` 负责写代码，
+  \`trellis-check\` 负责验证质量。
+- 每个 task 有 \`implement.jsonl\` / \`check.jsonl\` manifests，列出需要加载的
+  spec files。
+- platform hook 会把这些 spec files 和当前 task 的 \`prd.md\` 自动注入每个
+  sub-agent prompt，让 sub-agent 按团队 conventions 写代码 / review，不需要手动复制。
+- Source of truth 是 \`.trellis/spec/\`。现在把它填好，后续每个 task 都会受益。
+
+---
+
+## Completion / 完成
+
+当 developer 确认上面的 checklist 都已用真实 examples 完成（不是 placeholders）后，
+引导他们运行：
 
 \`\`\`bash
 ${pythonCmd} ./.trellis/scripts/task.py finish
 ${pythonCmd} ./.trellis/scripts/task.py archive 00-bootstrap-guidelines
 \`\`\`
 
-After archive, every new developer who joins this project will get a
-\`00-join-<slug>\` onboarding task instead of this bootstrap task.
+archive 之后，后续每个加入该项目的新 developer 会得到
+\`00-join-<slug>\` onboarding task，而不是这个 bootstrap task。
 
 ---
 
 ## Suggested opening line
 
-"Welcome to Trellis! Your init just set me up to help you fill the project
-spec — a one-time setup so every future AI session follows the team's
-conventions instead of writing generic code. Before we start, do you have
-any existing convention docs (CLAUDE.md, .cursorrules, CONTRIBUTING.md,
-etc.) I can pull from, or should I scan the codebase from scratch?"
+"欢迎使用 Trellis！这次 \`trellis init\` 已经让我可以帮你填写项目 spec。
+这是一次性 setup，做好后未来每个 AI session 都会遵循团队 conventions，而不是写
+generic code。开始前，你这里有现成的 convention docs（比如 CLAUDE.md、
+.cursorrules、CONTRIBUTING.md）可以让我参考吗？还是我直接从 codebase 扫描？"
 `;
 
   let content = header;
@@ -620,96 +619,90 @@ function getJoinerTaskJson(developer: string, taskName: string): TaskJson {
  */
 function getJoinerPrdContent(developer: string, pythonCmd: string): string {
   const slug = slugifyDeveloperName(developer);
-  return `# Joiner Onboarding Task
+  return `# Joiner Onboarding Task / 新成员上手 task
 
-**You (the AI) are running this task. The developer does not read this file.**
+**你（AI）正在执行这个 task。developer 不会主动阅读这份文件。**
 
-\`${developer}\` just ran \`trellis init\` on a fresh clone, saw "Developer
-initialized", and will now start asking you questions in chat. This joiner task
-exists under \`.trellis/tasks/\`; when they want to work on it, they should
-start it from a session that provides Trellis session identity.
+\`${developer}\` 刚刚在 fresh clone 上运行 \`trellis init\`，看到了
+"Developer initialized"，接下来会在 chat 里向你提问。这个 joiner task 已经写入
+\`.trellis/tasks/\`；当他们想处理它时，应从具备 Trellis session identity 的会话里
+继续这个 task。
 
-Your job is to orient them to Trellis. Don't dump all of this at them — open
-with a short greeting, ask where they want to start, and fill in the rest as
-they engage.
+你的任务是帮他们理解这个项目里的 Trellis 使用方式。不要一次性倾倒所有内容；先简短问候，
+问他们想从哪里开始，再随着对话补齐信息。
+
+默认用中文交流并编写面向人类阅读的 Trellis 文档；保留 English technical
+terms，例如 file name、command、API name、JSON key、status value、
+symbol name、\`PRD\`、\`task\`、\`workflow\`、\`sub-agent\`、
+\`quality gate\`、\`task.json\`、\`implement.jsonl\` 和 \`check.jsonl\`。
 
 ---
 
-## Topics to cover (adapt order to their questions)
+## Topics to cover（根据他们的问题调整顺序）
 
-### 1. What Trellis is + the workflow
+### 1. Trellis 是什么，以及 workflow
 
-Trellis is a workflow layer over Claude Code / Cursor / etc. that keeps AI
-agents consistent with project-specific conventions instead of writing generic
-code every session.
+Trellis 是覆盖在 Codex / Claude Code / Cursor 等 AI CLI 之上的 workflow layer。
+它让 AI agents 持续遵循项目级 conventions，而不是每个 session 都重新写 generic code。
 
-- **Three phases**: Plan (brainstorm → \`prd.md\`) → Execute (code + check) →
-  Finish (capture + wrap). Full reference: \`.trellis/workflow.md\`.
-- **Task lifecycle**: planning → in_progress → done → archive, under
-  \`.trellis/tasks/\`.
-- **Core slash commands**:
-  - \`/trellis:continue\` — resume the current session's active task
-  - \`/trellis:finish-work\` — wrap up a finished task
-  - \`/trellis:start\` — session boot from scratch (not needed here; the
-    SessionStart hook does its job automatically)
+- **Three phases**：Plan（brainstorm → \`prd.md\`）→ Execute（code + check）→
+  Finish（capture + wrap）。完整参考：\`.trellis/workflow.md\`。
+- **Task lifecycle**：planning → in_progress → done → archive，文件在
+  \`.trellis/tasks/\` 下。
+- **Core slash commands**：
+  - \`/trellis:continue\` — 继续当前 session 的 active task
+  - \`/trellis:finish-work\` — 收尾一个完成的 task
+  - \`/trellis:start\` — 从零启动 session（这里通常不需要；SessionStart hook 会自动工作）
 
-### 2. Runtime mechanics (explain when they ask "how does it know what to do")
+### 2. Runtime mechanics（当他们问“它怎么知道该做什么”时再讲）
 
-- **SessionStart hook** runs \`get_context.py\` and injects identity, git
-  status, session active task, active tasks, and workflow phase into the AI
-  conversation at every session start.
-- **\`<workflow-state>\` tag** is auto-injected with every user message,
-  carrying the current task + phase hint.
-- **\`/trellis:continue\`** loads the Phase Index, reads \`prd.md\` + recent
-  activity, and routes to the right skill (\`trellis-brainstorm\` for planning,
-  \`trellis-implement\` for coding, \`trellis-check\` for verification).
-- **\`trellis-implement\` sub-agent** is spawned when code needs to be written.
-  The platform hook reads \`{TASK_DIR}/implement.jsonl\` and auto-injects those
-  spec files + \`prd.md\` into the sub-agent's prompt so it codes per project
-  conventions.
-- **\`trellis-check\` sub-agent** follows the same pattern with \`check.jsonl\`
-  — reviews changes against specs, auto-fixes issues, runs lint/typecheck.
+- **SessionStart hook** 会运行 \`get_context.py\`，并在每个 session start 时注入
+  identity、git status、session active task、active tasks 和 workflow phase。
+- **\`<workflow-state>\` tag** 会随每条 user message 自动注入，携带 current task
+  和 phase hint。
+- **\`/trellis:continue\`** 会加载 Phase Index，读取 \`prd.md\` 和 recent activity，
+  再路由到合适的 skill（planning 用 \`trellis-brainstorm\`，coding 用
+  \`trellis-implement\`，verification 用 \`trellis-check\`）。
+- **\`trellis-implement\` sub-agent** 会在需要写代码时被调用。platform hook 读取
+  \`{TASK_DIR}/implement.jsonl\`，并把其中 spec files 和 \`prd.md\` 自动注入
+  sub-agent prompt，让它按 project conventions 写代码。
+- **\`trellis-check\` sub-agent** 用同样模式读取 \`check.jsonl\`，review changes，
+  auto-fix issues，并运行 lint / typecheck。
 
-File layout (mention when they ask "where does what live"):
-- \`.trellis/.runtime/sessions/<session>.json\` — session active-task state, gitignored
+File layout（当他们问“文件都在哪里”时再讲）：
+- \`.trellis/.runtime/sessions/<session>.json\` — session active-task state，gitignored
 - \`.trellis/tasks/<task>/{implement,check}.jsonl\` — per-task context manifests
-- \`.trellis/spec/\` — project-wide conventions (source of truth)
-- \`.trellis/workspace/${developer}/journal-*.md\` — their session log,
-  rotated at ~2000 lines
+- \`.trellis/spec/\` — project-wide conventions，也是 source of truth
+- \`.trellis/workspace/${developer}/journal-*.md\` — 他们的 session log，
+  大约 2000 行轮转
 
-### 3. This project's actual conventions
+### 3. 当前项目的实际 conventions
 
-- Summarize \`.trellis/spec/\` for them — what coding conventions this
-  specific team enforces.
-- Point at the last 5 entries in \`.trellis/tasks/archive/\` as a rhythm
-  example of how people actually work here. **If archive is empty** (the
-  project just started), skip this — don't invent examples.
-- Not your job in this onboarding to teach them the business code itself —
-  the README and their teammates handle that.
+- 为他们总结 \`.trellis/spec/\`：这个团队实际要求哪些 coding conventions。
+- 指向 \`.trellis/tasks/archive/\` 里最近 5 个条目，让他们看到这里真实的工作节奏。
+  **如果 archive 为空**（项目刚开始），跳过这一项，不要编造 examples。
+- 这个 onboarding 的目标不是教业务代码本身；业务 README 和 teammates 会处理那部分。
 
-### 4. Their assigned work
+### 4. 他们被分配的工作
 
-- Check if \`.trellis/workspace/${developer}/\` already exists — if yes, it's
-  their journal from another machine and worth mentioning.
-- Run \`${pythonCmd} ./.trellis/scripts/task.py list --assignee ${developer}\` to
-  show tasks assigned to them. (Quote the name if it contains spaces.)
-- Remind them that the "My Tasks" section appears in the SessionStart context
-  on every new session.
+- 检查 \`.trellis/workspace/${developer}/\` 是否已存在。如果存在，说明可能是他们另一台机器上的
+  journal，值得提醒。
+- 运行 \`${pythonCmd} ./.trellis/scripts/task.py list --assignee ${developer}\`
+  来展示分配给他们的 tasks。（如果名字包含空格，需要 quote。）
+- 提醒他们每个新 session 的 SessionStart context 都会显示 "My Tasks"。
 
 ---
 
-## Optional: walk through a small task end-to-end
+## Optional: 走一遍小 task
 
-If they want to practice before touching real work, offer to pick a tiny
-P3 task or a typo fix and run the full cycle together: \`/trellis:continue\`
-→ you implement via sub-agents → \`/trellis:finish-work\`.
+如果他们想在处理真实工作前练习，可以提议挑一个很小的 P3 task 或 typo fix，一起走完整流程：
+\`/trellis:continue\` → 通过 sub-agents implement → \`/trellis:finish-work\`。
 
 ---
 
-## Completion
+## Completion / 完成
 
-When they feel oriented (or after you've covered the four topics with
-reasonable back-and-forth), guide them to run:
+当他们已经理解流程（或你已经通过合理对话覆盖上面四个 topics）后，引导他们运行：
 
 \`\`\`bash
 ${pythonCmd} ./.trellis/scripts/task.py finish
@@ -720,10 +713,9 @@ ${pythonCmd} ./.trellis/scripts/task.py archive 00-join-${slug}
 
 ## Suggested opening line
 
-"Welcome! Your \`trellis init\` set me up to onboard you to this project. I
-can walk you through the workflow, show you the runtime mechanics under the
-hood, summarize the team's spec, or jump to what you're already curious about
-— which would you prefer?"
+"欢迎！这次 \`trellis init\` 已经让我可以帮你上手这个项目里的 Trellis。
+我可以先讲 workflow、解释 runtime mechanics、总结团队 spec，也可以直接回答你已经好奇的问题。
+你想从哪里开始？"
 `;
 }
 

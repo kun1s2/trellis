@@ -50,6 +50,7 @@ import {
   commonGitContext,
   commonSessionContext,
   getAllScripts,
+  workflowMdTemplate,
 } from "../src/templates/trellis/index.js";
 import {
   collectPlatformTemplates,
@@ -58,6 +59,9 @@ import {
 } from "../src/configurators/index.js";
 import { setWriteMode } from "../src/utils/file-writer.js";
 import {
+  agentsMdContent,
+  backendIndexContent,
+  frontendIndexContent,
   guidesIndexContent,
   workspaceIndexContent,
 } from "../src/templates/markdown/index.js";
@@ -69,6 +73,8 @@ afterEach(() => {
 });
 
 const HOST_PYTHON = process.platform === "win32" ? "python" : "python3";
+const OLD_ENGLISH_DOCUMENTATION_RULE =
+  /All documentation (?:should|must|is).*English/;
 
 function frontmatter(content: string): string {
   return content.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? "";
@@ -5405,6 +5411,64 @@ describe("regression: templates/markdown/spec contains only .md.txt files (0.5.0
     expect(
       orphans,
       `Orphan non-.md.txt files in templates/markdown/spec/: ${orphans.join(", ")}`,
+    ).toEqual([]);
+  });
+});
+
+describe("regression: new-project templates use Chinese human-readable policy", () => {
+  it("CLI-bundled init templates do not reintroduce the old English-only rule", () => {
+    const templates = [
+      ["AGENTS.md", agentsMdContent],
+      [".trellis/workflow.md", workflowMdTemplate],
+      [".trellis/spec/backend/index.md", backendIndexContent],
+      [".trellis/spec/frontend/index.md", frontendIndexContent],
+      [".trellis/workspace/index.md", workspaceIndexContent],
+    ] as const;
+
+    for (const [label, content] of templates) {
+      expect(content, `${label} should state Chinese default`).toMatch(
+        /默认使用中文|默认使用\*\*中文\*\*|默认使用中文表达/,
+      );
+      expect(content, `${label} should preserve technical terms`).toContain(
+        "technical terms",
+      );
+      expect(content, `${label} should not keep old English rule`).not.toMatch(
+        OLD_ENGLISH_DOCUMENTATION_RULE,
+      );
+    }
+  });
+});
+
+describe("regression: marketplace spec templates use Chinese human-readable policy", () => {
+  it("marketplace specs do not reintroduce the old English-only language rule", () => {
+    const repoRoot = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "../../..",
+    );
+    const marketplaceSpecs = path.join(repoRoot, "marketplace", "specs");
+    const markdownFiles: string[] = [];
+
+    function walk(dir: string): void {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(full);
+        } else if (entry.isFile() && entry.name.endsWith(".md")) {
+          markdownFiles.push(full);
+        }
+      }
+    }
+
+    walk(marketplaceSpecs);
+
+    const offenders = markdownFiles.filter((file) =>
+      OLD_ENGLISH_DOCUMENTATION_RULE.test(
+        fs.readFileSync(file, "utf-8"),
+      ),
+    );
+    expect(
+      offenders.map((file) => path.relative(repoRoot, file)),
+      "Marketplace specs feed `trellis init --template`; do not require future projects to write Trellis docs in English.",
     ).toEqual([]);
   });
 });

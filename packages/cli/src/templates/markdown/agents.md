@@ -5,6 +5,8 @@ These instructions are for AI assistants working in this project.
 
 This project is managed by Trellis. The working knowledge you need lives under `.trellis/`:
 
+默认使用中文与用户交流，并用中文编写面向人类阅读的 Trellis 文档；保留 file name、command、API name、JSON key、status value、symbol name 和 Trellis technical terms 的原始语言。
+
 - `.trellis/workflow.md` — development phases, when to create tasks, skill routing
 - `.trellis/spec/` — package- and layer-scoped coding guidelines (read before writing code in a given layer)
 - `.trellis/workspace/` — per-developer journals and session traces
