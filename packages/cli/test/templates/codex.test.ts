@@ -66,9 +66,29 @@ describe("codex getAllAgents", () => {
 });
 
 describe("codex getAllCodexSkills (platform-specific)", () => {
-  it("returns empty after parallel removal", () => {
+  it("returns the Codex-only doc organizer skill", () => {
     const skills = getAllCodexSkills();
-    expect(skills).toEqual([]);
+    expect(skills.map((skill) => skill.name)).toEqual([
+      "trellis-doc-organizer",
+    ]);
+  });
+
+  it("trellis-doc-organizer preserves in-place organization guardrails", () => {
+    const skill = getAllCodexSkills().find(
+      (item) => item.name === "trellis-doc-organizer",
+    );
+
+    expect(skill?.content).toContain("name: trellis-doc-organizer");
+    expect(skill?.content).toContain("Organize the existing Trellis artifacts");
+    expect(skill?.content).toContain("Do not create a new default brief");
+    expect(skill?.content).toContain(".trellis/spec/**");
+    expect(skill?.content).toContain("prd.md");
+    expect(skill?.content).toContain("design.md");
+    expect(skill?.content).toContain("implement.md");
+    expect(skill?.content).toContain("research/*.md");
+    expect(skill?.content).toContain("historical");
+    expect(skill?.content).toContain("superseded");
+    expect(skill?.content).toContain("trellis-update-spec");
   });
 });
 

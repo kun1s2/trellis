@@ -123,10 +123,12 @@ When adding a new platform `{platform}`, update the following:
 > | Layer | Install Path | Template Source | Purpose |
 > |-------|-------------|-----------------|---------|
 > | Shared skills | `.agents/skills/` | Generated from `common/` templates | Cross-platform skills (agentskills.io standard) |
+> | Codex-specific skills | `.codex/skills/` | `src/templates/codex/codex-skills/<skill>/SKILL.md` | Codex-only skills that should not be consumed by other platforms |
 > | Codex config/agents/hooks | `.codex/` | `src/templates/codex/{agents,hooks.json}` | Config, custom agents, UserPromptSubmit hook config, and compatibility hook files |
 >
 > **Key rules:**
 > - Shared skills in `.agents/skills/` must NOT contain platform-specific references (no `--platform codex`, no `codex exec`)
+> - Codex-only skills belong in `src/templates/codex/codex-skills/<skill>/SKILL.md`; do not add new skills under legacy `src/templates/codex/skills/`, which is not read by `getAllCodexSkills()`
 > - Agent TOML format: `name` + `description` + `developer_instructions` + optional `sandbox_mode` (NOT `[sandbox_read_only]` + `prompt`)
 > - Codex hooks require `features.hooks = true` in user config (Codex 0.129+; older versions accept legacy `codex_hooks = true`); 0.129+ also gates per-hook activation behind a one-time `/hooks` TUI review
 > - Platform detection uses `.codex/` only — `.agents/skills/` alone does NOT trigger codex detection
@@ -181,7 +183,9 @@ files.set(".agents/skills/check/SKILL.md", resolvePlaceholdersNeutral(tmpl, ctx)
 |-----------|----------|
 | (no template directory) | Antigravity derives from Codex skills at runtime |
 
-> Note: Antigravity has no physical template files — workflow content is **derived from Codex skills at runtime** via `adaptSkillContentToWorkflow()`. The config dir is `.agent/workflows` (not `.agent/`). Workflows are triggered with `/workflow-name` slash commands. When adding a new Codex skill, Antigravity automatically picks it up.
+> Note: Antigravity has no physical template files. The config dir is `.agent/workflows` (not `.agent/`). Workflows are triggered with `/workflow-name` slash commands.
+>
+> Current implementation note: Antigravity now derives workflows and skills from `common/` templates via `resolveCommands()` / `resolveSkills()`. Codex-only skills under `src/templates/codex/codex-skills/` are not automatically distributed to Antigravity.
 
 **Copilot pattern** (prompts + hooks):
 
@@ -1530,7 +1534,7 @@ if (!hadDeveloperFileBefore) {
 
 **Symptom**: Template loading fails with `ENOENT` when scanning skills.
 
-**Fix**: Keep `src/templates/codex/skills/<skill-name>/SKILL.md` complete; when removing a skill, delete both `SKILL.md` and the directory.
+**Fix**: Keep `src/templates/codex/codex-skills/<skill-name>/SKILL.md` complete; when removing a Codex-only skill, delete both `SKILL.md` and the directory. Do not place new Codex-only skills under legacy `src/templates/codex/skills/`; that directory is not the active `getAllCodexSkills()` source.
 
 ### EXCLUDE_PATTERNS missing `.js` in configurator
 

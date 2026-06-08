@@ -12,6 +12,7 @@ import { AI_TOOLS } from "../../src/types/ai-tools.js";
 import { setWriteMode } from "../../src/utils/file-writer.js";
 import {
   getAllAgents as getAllCodexAgents,
+  getAllCodexSkills,
   getConfigTemplate as getCodexConfigTemplate,
   getHooksConfig as getCodexHooksConfig,
 } from "../../src/templates/codex/index.js";
@@ -391,6 +392,50 @@ describe("configurePlatform", () => {
     expect(fs.existsSync(configPath)).toBe(true);
     expect(fs.readFileSync(configPath, "utf-8")).toBe(
       replacePythonCommandLiterals(config.content),
+    );
+  });
+
+  it("configurePlatform('codex') writes Codex-specific skills", async () => {
+    await configurePlatform("codex", tmpDir);
+
+    const codexSkillsRoot = path.join(tmpDir, ".codex", "skills");
+    const expectedSkills = getAllCodexSkills();
+    const actualSkillNames = fs
+      .readdirSync(codexSkillsRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+
+    expect(actualSkillNames).toEqual(
+      expectedSkills.map((skill) => skill.name).sort(),
+    );
+
+    for (const skill of expectedSkills) {
+      const skillPath = path.join(codexSkillsRoot, skill.name, "SKILL.md");
+      expect(fs.existsSync(skillPath)).toBe(true);
+      expect(fs.readFileSync(skillPath, "utf-8")).toBe(
+        replacePythonCommandLiterals(skill.content),
+      );
+    }
+
+    expect(
+      fs.existsSync(
+        path.join(
+          tmpDir,
+          ".agents",
+          "skills",
+          "trellis-doc-organizer",
+          "SKILL.md",
+        ),
+      ),
+    ).toBe(false);
+
+    const trackedTemplates = collectPlatformTemplates("codex");
+    expect(trackedTemplates?.get(".codex/skills/trellis-doc-organizer/SKILL.md")).toBe(
+      replacePythonCommandLiterals(
+        expectedSkills.find((skill) => skill.name === "trellis-doc-organizer")
+          ?.content ?? "",
+      ),
     );
   });
 
